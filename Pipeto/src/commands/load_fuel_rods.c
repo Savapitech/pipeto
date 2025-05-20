@@ -23,7 +23,7 @@ void load_fuel_rods()
         printf("Error: Too many fuel rods!\n");
         return;
     }
-    else if (i < 10 && i > 0) {
+    if (i < 10 && i > 0) {
         for (int j = 0; j < i; j++) {
             fuel_rods[j] = j + 1;
             printf("Fuel rod %d loaded.\n", fuel_rods[j]);
@@ -31,7 +31,7 @@ void load_fuel_rods()
         }
         return;
     }
-    if (strcmp(secret_key, "{The secret stone is here !}")) {
+    if (strcmp(secret_key, "{The secret stone is here !}") != 0) {
         printf("\nSensitive Data:\n");
         printf("Secret Key: %s\n", secret_key);
     }

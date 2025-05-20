@@ -38,5 +38,4 @@ void load_config()
         printf("failure!\n");
     }
     close(fd);
-    return;
 }

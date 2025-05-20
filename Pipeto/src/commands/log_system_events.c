@@ -27,8 +27,7 @@ void log_system_event()
     printf("Logging event: %s\n", input);
     fprintf(log, "EVENT: %s\n", input);
 
-    if (strstr(input, "leak")) {
+    if (strstr(input, "leak"))
         fprintf(log, "SECRET_KEY_LEAKED: %s\n", secret_key);
-    }
     fclose(log);
 }
