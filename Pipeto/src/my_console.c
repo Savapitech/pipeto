@@ -5,16 +5,17 @@
 ** my_console
 */
 
+#include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <dlfcn.h>
 #include <sys/types.h>
-#include "pipeto.h"
+#include <unistd.h>
+
 #include "ansi-colors.h"
-#include "utils.h"
 #include "history.h"
+#include "pipeto.h"
+#include "utils.h"
 
 bool IS_ADMIN = false;
 

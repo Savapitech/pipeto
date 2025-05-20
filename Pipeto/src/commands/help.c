@@ -6,7 +6,6 @@
 */
 
 #include <stdio.h>
-#include <string.h>
 
 void help()
 {
@@ -26,7 +25,7 @@ void help()
         "- load_fuel_rods: Load fuel rods into the reactor.",
         "- log_system_event: Log a system event.",
         "- history: Display command history.",
-        "- !n: Execute command number n from history."
+        "- !n: Execute command number n from history.",
         "- load_config: Load configuration from a file.",
         "- configure_cooling_system: Configure the cooling system.",
         "---- External libraries ----",

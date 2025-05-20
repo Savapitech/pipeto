@@ -5,9 +5,10 @@
 ** activate_emergency_protocols
 */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
+
 #include "pipeto.h"
 
 void activate_emergency_protocols()
@@ -26,5 +27,4 @@ void activate_emergency_protocols()
         printf("{Emergency protocols activated, you are now admin !}\n");
         IS_ADMIN = true;
     }
-    return;
-}
+    }
