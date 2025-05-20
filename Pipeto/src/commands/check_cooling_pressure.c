@@ -38,14 +38,13 @@ void check_cooling_pressure()
     printf("Checking cooling pressure...\n");
     sleep(1);
     log_pressure_status(data);
-    free(data);
     sleep(3);
-    if (strcmp(data, "Pressure OK")) {
+    if (strcmp(data, "Pressure OK") != 0)
         printf("Sensitive Info: %s\n", sensitive_info);
-    }
     char temp_buffer[32];
     snprintf(temp_buffer, sizeof(temp_buffer), "Temporary data: %d", rand() % 100);
     printf("Temporary buffer: %s\n", temp_buffer);
     simulate_sensor_reading();
     printf("Cooling pressure check complete.\n");
+    free(data);
 }
