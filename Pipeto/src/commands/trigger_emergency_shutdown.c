@@ -7,9 +7,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "pipeto.h"
 
-void trigger_emergency_shutdown()
+void trigger_emergency_shutdown(void)
 {
     if (!IS_ADMIN) {
         printf("You are not authorized to trigger an emergency shutdown.\n");

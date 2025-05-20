@@ -1,7 +1,14 @@
-#ifndef HISTORY_H
-#define HISTORY_H
+/*
+** EPITECH PROJECT, 2025
+** __
+** File description:
+** _
+*/
 
-#define MAX_COMMAND_LENGTH 256
+#ifndef HISTORY_H
+    #define HISTORY_H
+
+    #define MAX_COMMAND_LENGTH 256
 
 void history_init(void);
 void history_add(const char *command);
@@ -12,3 +19,4 @@ const char *history_get(int index);
 int history_count_get(void);
 
 #endif /* HISTORY_H */
+

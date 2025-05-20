@@ -1,37 +1,50 @@
+/*
+** EPITECH PROJECT, 2025
+** __
+** File description:
+** _
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
 #include "history.h"
 
 #define HISTORY_FILE ".pipeto_history"
 #define MAX_HISTORY_SIZE 1000
 
-static char **history = NULL;
-static int history_count = 0;
-static int history_size = 0;
+static char **HISTORY = NULL;
+static int HIS_SZ = 0;
+static int HISTORY_SIZE = 0;
+
+static
+void read_file(char *line)
+{
+    line[strcspn(line, "\n")] = '\0';
+    if (strlen(line) > 0) {
+        HISTORY[HIS_SZ] = strdup(line);
+        if (HISTORY[HIS_SZ])
+            HIS_SZ++;
+    }
+}
 
 void history_init(void)
 {
     FILE *file;
     char line[MAX_COMMAND_LENGTH];
-    
-    history = malloc(sizeof(char *) * MAX_HISTORY_SIZE);
-    if (!history)
+
+    HISTORY = malloc(sizeof(char *) * MAX_HISTORY_SIZE);
+    if (!HISTORY)
         return;
-        
-    history_size = MAX_HISTORY_SIZE;
-    history_count = 0;
-    
+    HISTORY_SIZE = MAX_HISTORY_SIZE;
+    HIS_SZ = 0;
     file = fopen(HISTORY_FILE, "r");
     if (file) {
-        while (fgets(line, sizeof(line), file) && history_count < MAX_HISTORY_SIZE) {
-            line[strcspn(line, "\n")] = '\0';
-            if (strlen(line) > 0) {
-                history[history_count] = strdup(line);
-                if (history[history_count])
-                    history_count++;
-            }
+        while (fgets(line, sizeof(line), file) && HIS_SZ
+            < MAX_HISTORY_SIZE) {
+            read_file(line);
         }
         fclose(file);
     }
@@ -39,64 +52,64 @@ void history_init(void)
 
 void history_add(const char *command)
 {
+    FILE *file;
+
     if (!command || strlen(command) == 0 ||
-        (history_count > 0 && strcmp(history[history_count - 1], command) == 0))
+        (HIS_SZ > 0 && strcmp(HISTORY[HIS_SZ - 1], command) == 0))
         return;
-
-    if (history_count == history_size) {
-        free(history[0]);
-        for (int i = 0; i < history_count - 1; i++)
-            history[i] = history[i + 1];
-        history_count--;
+    if (HIS_SZ == HISTORY_SIZE) {
+        free(HISTORY[0]);
+        for (int i = 0; i < HIS_SZ - 1; i++)
+            HISTORY[i] = HISTORY[i + 1];
+        HIS_SZ--;
     }
-
-    history[history_count] = strdup(command);
-    if (history[history_count])
-        history_count++;
-
-    FILE *file = fopen(HISTORY_FILE, "w");
+    HISTORY[HIS_SZ] = strdup(command);
+    if (HISTORY[HIS_SZ])
+        HIS_SZ++;
+    file = fopen(HISTORY_FILE, "w");
     if (file) {
-        for (int i = 0; i < history_count; i++)
-            fprintf(file, "%s\n", history[i]);
+        for (int i = 0; i < HIS_SZ; i++)
+            fprintf(file, "%s\n", HISTORY[i]);
         fclose(file);
     }
 }
 
 void history_clear(void)
 {
-    for (int i = 0; i < history_count; i++)
-        free(history[i]);
-    history_count = 0;
+    FILE *file;
 
-    FILE *file = fopen(HISTORY_FILE, "w");
+    for (int i = 0; i < HIS_SZ; i++)
+        free(HISTORY[i]);
+    HIS_SZ = 0;
+    file = fopen(HISTORY_FILE, "w");
     if (file)
         fclose(file);
 }
 
 void history_free(void)
 {
-    for (int i = 0; i < history_count; i++)
-        free(history[i]);
-    free(history);
-    history = NULL;
-    history_count = 0;
-    history_size = 0;
+    for (int i = 0; i < HIS_SZ; i++)
+        free(HISTORY[i]);
+    free(HISTORY);
+    HISTORY = NULL;
+    HIS_SZ = 0;
+    HISTORY_SIZE = 0;
 }
 
 void history_show(void)
 {
-    for (int i = 0; i < history_count; i++)
-        printf(" %d  %s\n", i + 1, history[i]);
+    for (int i = 0; i < HIS_SZ; i++)
+        printf(" %d  %s\n", i + 1, HISTORY[i]);
 }
 
 const char *history_get(int index)
 {
-    if (index < 0 || index >= history_count)
+    if (index < 0 || index >= HIS_SZ)
         return NULL;
-    return history[index];
+    return HISTORY[index];
 }
 
 int history_count_get(void)
 {
-    return history_count;
+    return HIS_SZ;
 }

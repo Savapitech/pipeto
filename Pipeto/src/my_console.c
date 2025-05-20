@@ -41,7 +41,7 @@ const char *command_strings[] = {
     "trigger_emergency_shutdown",
 };
 
-static void initialize_commands(void (*f[COMMAND_COUNT])(char *input))
+static void initialize_commands(void (*f[COMMAND_COUNT])(void))
 {
     f[INIT_REACTOR] = init_reactor;
     f[CHECK_REACTOR_STATUS] = check_reactor_status;
@@ -72,7 +72,7 @@ const char *command_strings_lib[] = {
     "run_turbine",
 };
 
-static void process_command(char *line, void (*f[COMMAND_COUNT])(char *input))
+static void process_command(char *line, void (*f[COMMAND_COUNT])(char *))
 {
     bool command_found = false;
 
@@ -111,24 +111,25 @@ static void process_command(char *line, void (*f[COMMAND_COUNT])(char *input))
     }
 }
 
-void show_history(char *input)
+void show_history(void)
 {
-    (void)input;
     history_show();
 }
 
-void check_pepito_lib(char *input){
+void check_pepito_lib(char *input)
+{
     typedef void(*t_myfunc)(void);
+    void *dlh = dlopen("libpepito.so", RTLD_LAZY);
+    void (*fnc)(void);
 
-    void* dlh = dlopen("libpepito.so", RTLD_LAZY);
-    if (dlh == NULL) { 
-        fprintf(stderr, "%s\n", dlerror()); 
-        exit(1); 
+    if (dlh == NULL) {
+        fprintf(stderr, "%s\n", dlerror());
+        exit(1);
     }
-    void (*fnc)() = dlsym(dlh, input);
-    if (fnc == NULL) { 
-        fprintf(stderr, "%s\n", dlerror()); 
-        exit(1); 
+    fnc = dlsym(dlh, input);
+    if (fnc == NULL) {
+        fprintf(stderr, "%s\n", dlerror());
+        exit(1);
     }
     fnc();
 }
@@ -138,7 +139,7 @@ int my_console(void)
     char *line = NULL;
     size_t len = 0;
     ssize_t read;
-    void (*f[COMMAND_COUNT])(char *input);
+    void (*f[COMMAND_COUNT])(void);
 
     initialize_commands(f);
     history_init();
@@ -154,11 +155,10 @@ int my_console(void)
             continue;
 
         line[strcspn(line, "\n")] = '\0';
-        
         if (strlen(line) > 0)
             history_add(line);
             
-        process_command(line, f);
+        process_command(line, (void (**)(char *))f);
     }
 
     history_free();

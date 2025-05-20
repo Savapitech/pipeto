@@ -6,35 +6,33 @@
 */
 
 #ifndef PIPETO_H_
-#define PIPETO_H_
-
-#include <stdbool.h>
+    #define PIPETO_H_
+    #include <stdbool.h>
+    #define UNUSED __attribute__((unused))
 
 extern bool IS_ADMIN;
-#define UNUSED __attribute__((unused))
 
 int my_console(void);
 
-void init_reactor();
-void check_reactor_status();
-void activate_emergency_protocols();
-void simulate_meltdown();
-void check_cooling_pressure();
-void send_status_report();
-void monitor_radiation_levels();
-void set_reactor_power();
-void run_diagnostic();
-void enable_remote_access();
-void check_cooling_pressure();
-void quit();
-void help();
-void load_fuel_rods();
-void log_system_event();
-void unlock_secret_mode();
-void load_config();
-void show_history(char *input);
-void configure_cooling_system();
-void trigger_emergency_shutdown();
+void init_reactor(void);
+void check_reactor_status(void);
+void activate_emergency_protocols(void);
+void simulate_meltdown(void);
+void check_cooling_pressure(void);
+void send_status_report(void);
+void monitor_radiation_levels(void);
+void set_reactor_power(void);
+void run_diagnostic(void);
+void enable_remote_access(void);
+void quit(void);
+void help(void);
+void load_fuel_rods(void);
+void log_system_event(void);
+void unlock_secret_mode(void);
+void load_config(void);
+void show_history(void);
+void configure_cooling_system(void);
+void trigger_emergency_shutdown(void);
 
 enum commands {
     INIT_REACTOR,

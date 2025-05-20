@@ -4,8 +4,10 @@
 ** File description:
 ** main
 */
+
 #include "pipeto.h"
-int main (UNUSED int ac, UNUSED char **av)
+
+int main(UNUSED int ac, UNUSED char **av)
 {
     return my_console();
 }

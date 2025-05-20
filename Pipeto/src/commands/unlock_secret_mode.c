@@ -5,12 +5,12 @@
 ** unlock_secret_mode
 */
 
-#include <stdio.h>
 #include <stdbool.h>
-#include <string.h>
+#include <stdio.h>
+
 #include "pipeto.h"
 
-void unlock_secret_mode()
+void unlock_secret_mode(void)
 {
     if (IS_ADMIN) {
         printf("Secret mode unlocked! Welcome, admin.\n");

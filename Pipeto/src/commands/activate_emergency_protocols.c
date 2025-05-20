@@ -11,10 +11,10 @@
 
 #include "pipeto.h"
 
-void activate_emergency_protocols()
+void activate_emergency_protocols(void)
 {
     char input[100];
-    
+
     printf("Enter emergency password: ");
     fgets(input, sizeof(input), stdin);
     input[strcspn(input, "\n")] = 0;
@@ -27,4 +27,4 @@ void activate_emergency_protocols()
         printf("{Emergency protocols activated, you are now admin !}\n");
         IS_ADMIN = true;
     }
-    }
+}

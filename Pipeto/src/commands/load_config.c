@@ -32,7 +32,7 @@ void load_config()
     dprintf(1, "Loading configuration file from ./config.ini\n");
     int fd = open("./config.ini", O_RDONLY);
 
-    read(fd, array, 100);
+    read(fd, array, sizeof array);
     if (0 /* TODO */) {
     } else {
         printf("failure!\n");

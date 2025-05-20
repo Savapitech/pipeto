@@ -5,11 +5,11 @@
 ** exit
 */
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-void quit()
-{   
+void quit(void)
+{
     printf("Exiting program...\n");
     exit(0);
 }

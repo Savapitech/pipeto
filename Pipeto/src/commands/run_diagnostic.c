@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void run_diagnostic()
+void run_diagnostic(void)
 {
     int *data = NULL;
     char input[32];
