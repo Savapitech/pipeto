@@ -1,0 +1,4 @@
+*.vgcore
+.pipeto_history
+libpipeto.so
+pipeto

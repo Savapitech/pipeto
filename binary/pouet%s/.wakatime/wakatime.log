@@ -1,0 +1,2 @@
+{"level":"warn","now":"2025-05-02T16:54:54+02:00","caller":"offline/offline.go:63","func":"github.com/wakatime/wakatime-cli/cmd/offline.loadParams","message":"failed to load API parameters: api key not found or empty","version":"v1.115.1","os/arch":"linux/amd64"}
+{"level":"warn","now":"2025-05-02T16:56:31+02:00","caller":"offline/offline.go:63","func":"github.com/wakatime/wakatime-cli/cmd/offline.loadParams","message":"failed to load API parameters: api key not found or empty","version":"v1.115.1","os/arch":"linux/amd64"}
