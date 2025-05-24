@@ -5,6 +5,7 @@
 ** send_status_report
 */
 
+#include "pipeto.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -55,7 +56,7 @@ void base64_encode(const char *input, char *output)
     output[j] = '\0';
 }
 
-void send_status_report()
+void send_status_report(pipeto_ctx_t *ctx)
 {
     FILE *file = fopen("Data/status_report.txt", "w");
     char encoded_report[512];

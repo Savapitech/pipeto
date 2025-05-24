@@ -5,23 +5,21 @@
 ** simulate_meltdown
 */
 
+#include "pipeto.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
 
-void simulate_meltdown()
+void simulate_meltdown(pipeto_ctx_t *ctx)
 {
     char reactor_status[32] = "Reactor Stable";
     int random_number = rand() % 100;
     char secret_code[16] = "{MELTDOWN1234}";
 
     printf("Generated random number: %d\n", random_number);
-
     if (random_number < 10) {
         printf("Meltdown simulated! Reactor core is overheating.\n");
         strcpy(reactor_status, "Reactor Overheating");
-
         if (random_number < 5) {
             printf("Critical Error: Secret Code Leaked: %s\n", secret_code);
             return;

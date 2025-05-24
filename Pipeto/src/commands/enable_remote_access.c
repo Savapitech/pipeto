@@ -5,16 +5,16 @@
 ** enable_remote_access
 */
 
+#include "pipeto.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
 
 void perform_network_call(const char *url)
 {
     printf("Performing network call to: %s\n", url);
-
     for (volatile int i = 0; i < 100000000; i++);
     sleep(5);
     printf("Network call to %s completed.\n", url);
@@ -29,10 +29,9 @@ void log_access_attempt(const char *status)
     printf("[%s] Remote access status: %s\n", timestamp, status);
 }
 
-void enable_remote_access()
+void enable_remote_access(pipeto_ctx_t *ctx)
 {
     static int enabled = 0;
-
     const char *dummy_urls[] = {
         "http://example.com/api/enable",
         "http://example.com/api/disable",
@@ -40,7 +39,6 @@ void enable_remote_access()
     };
 
     printf("Initializing remote access procedure...\n\n");
-
     if (enabled == 0) {
         printf("Enabling remote access...\n");
         perform_network_call(dummy_urls[0]);
@@ -58,3 +56,4 @@ void enable_remote_access()
         printf("Remote access successfully disabled.\n\n");
     }
 }
+

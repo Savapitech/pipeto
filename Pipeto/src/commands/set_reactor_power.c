@@ -5,12 +5,13 @@
 ** set_reactor_power
 */
 
+#include "pipeto.h"
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-void set_reactor_power()
+void set_reactor_power(pipeto_ctx_t *ctx)
 {
     char power[11];
 

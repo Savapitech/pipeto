@@ -5,6 +5,7 @@
 ** load_config
 */
 
+#include "pipeto.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -26,14 +27,15 @@ void check_password(char *str)
     }
 }
 
-void load_config()
+void load_config(pipeto_ctx_t *ctx)
 {
     char array[8] = {};
-    dprintf(1, "Loading configuration file from ./config.ini\n");
-    int fd = open("./config.ini", O_RDONLY);
+    int fd;
 
+    dprintf(1, "Loading configuration file from ./config.ini\n");
+    fd = open("./config.ini", O_RDONLY);
     read(fd, array, sizeof array);
-    if (0 /* TODO */) {
+    if (0) {
     } else {
         printf("failure!\n");
     }

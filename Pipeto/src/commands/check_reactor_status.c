@@ -5,6 +5,7 @@
 ** check_reactor_status
 */
 
+#include "pipeto.h"
 #include <stdio.h>
 #include <unistd.h>
 
@@ -21,8 +22,11 @@ void encrypt_message(const char *input, char *output, int shift)
     }
 }
 
-void check_reactor_status()
+void check_reactor_status(pipeto_ctx_t *ctx)
 {
+    const char *message = "ReactorStatusOK";
+    char encrypted_message[50] = {0};
+
     printf("Starting reactor status check...\n");
     sleep(1);
     printf("Checking core temperature...\n");
@@ -36,14 +40,11 @@ void check_reactor_status()
     printf("Checking radiation levels...\n");
     sleep(2);
     printf("Radiation levels: Safe\n\n");
-
     printf("Encrypting critical reactor data...\n");
-    const char *message = "ReactorStatusOK";
-    char encrypted_message[50] = {0};
     encrypt_message(message, encrypted_message, 3);
     sleep(1);
     printf("Encrypted message: %s\n\n", encrypted_message);
-
     printf("Reactor status: OK\n");
     printf("Reactor status check complete.\n\n");
 }
+

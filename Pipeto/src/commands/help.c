@@ -5,9 +5,9 @@
 ** help
 */
 
-#include <stdio.h>
+#include "pipeto.h"
 
-void help()
+void help(pipeto_ctx_t *ctx)
 {
     const char *commands[] = {
         "- init_reactor: Initialize the reactor for operation.",
@@ -34,7 +34,6 @@ void help()
         "- run_turbine: Run the turbine.",
         "- turbine_temperature: Change the turbine temperature.",
         "- turbine_remote_access: Remote access to the turbine.",
-
     };
     int command_count = sizeof(commands) / sizeof(commands[0]);
 

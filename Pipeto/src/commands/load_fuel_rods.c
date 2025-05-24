@@ -5,20 +5,20 @@
 ** load_fuel_rods
 */
 
+#include "pipeto.h"
 #include <stdio.h>
 
-void load_fuel_rods()
+void load_fuel_rods(pipeto_ctx_t *ctx)
 {
     int fuel_rods[10];
     int i = 0;
     char input[100];
     char secret_key[28] = "{The secret stone is here !}";
-    
+
     printf("Loading fuel rods...\n");
     printf("Enter the number of fuel rods to load (max 10): ");
     fgets(input, 100, stdin);
     sscanf(input, "%d", &i);
-
     if (i > 10) {
         printf("Error: Too many fuel rods!\n");
         return;

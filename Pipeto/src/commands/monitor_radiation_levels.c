@@ -5,6 +5,7 @@
 ** monitor_radiation_levels
 */
 
+#include "pipeto.h"
 #include <stdio.h>
 #include <string.h>
 void secret_function(void)
@@ -12,7 +13,7 @@ void secret_function(void)
     printf("{The stone isn't in the pocket anymore ...}\n");
 }
 
-void monitor_radiation_levels(void)
+void monitor_radiation_levels(pipeto_ctx_t *ctx)
 {
     char buffer[10];
     void(*function_ptr)(void) = NULL;

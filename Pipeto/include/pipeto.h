@@ -14,25 +14,29 @@ extern bool IS_ADMIN;
 
 int my_console(void);
 
-void init_reactor(void);
-void check_reactor_status(void);
-void activate_emergency_protocols(void);
-void simulate_meltdown(void);
-void check_cooling_pressure(void);
-void send_status_report(void);
-void monitor_radiation_levels(void);
-void set_reactor_power(void);
-void run_diagnostic(void);
-void enable_remote_access(void);
-void quit(void);
-void help(void);
-void load_fuel_rods(void);
-void log_system_event(void);
-void unlock_secret_mode(void);
-void load_config(void);
-void show_history(void);
-void configure_cooling_system(void);
-void trigger_emergency_shutdown(void);
+typedef struct {
+    bool is_admin;
+} pipeto_ctx_t;
+
+void init_reactor(pipeto_ctx_t *ctx);
+void check_reactor_status(pipeto_ctx_t *ctx);
+void activate_emergency_protocols(pipeto_ctx_t *ctx);
+void simulate_meltdown(pipeto_ctx_t *ctx);
+void check_cooling_pressure(pipeto_ctx_t *ctx);
+void send_status_report(pipeto_ctx_t *ctx);
+void monitor_radiation_levels(pipeto_ctx_t *ctx);
+void set_reactor_power(pipeto_ctx_t *ctx);
+void run_diagnostic(pipeto_ctx_t *ctx);
+void enable_remote_access(pipeto_ctx_t *ctx);
+void quit(pipeto_ctx_t *ctx);
+void help(pipeto_ctx_t *ctx);
+void load_fuel_rods(pipeto_ctx_t *ctx);
+void log_system_event(pipeto_ctx_t *ctx);
+void unlock_secret_mode(pipeto_ctx_t *ctx);
+void load_config(pipeto_ctx_t *ctx);
+void show_history(pipeto_ctx_t *ctx);
+void configure_cooling_system(pipeto_ctx_t *ctx);
+void trigger_emergency_shutdown(pipeto_ctx_t *ctx);
 
 enum commands {
     INIT_REACTOR,
@@ -67,4 +71,5 @@ enum commands_lib {
     COMMAND_COUNT_LIB
 };
 
+typedef void(*myfunc_t)(pipeto_ctx_t *ctx);
 #endif /* !PIPETO_H_ */

@@ -5,11 +5,12 @@
 ** run_diagnostic
 */
 
+#include "pipeto.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-void run_diagnostic(void)
+void run_diagnostic(pipeto_ctx_t *ctx)
 {
     int *data = NULL;
     char input[32];

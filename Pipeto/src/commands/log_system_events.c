@@ -5,10 +5,11 @@
 ** log_system_events
 */
 
+#include "pipeto.h"
 #include <stdio.h>
 #include <string.h>
 
-void log_system_event()
+void log_system_event(pipeto_ctx_t *ctx)
 {
     char command[100];
     char input[100];

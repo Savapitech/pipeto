@@ -19,4 +19,3 @@ const char *history_get(int index);
 int history_count_get(void);
 
 #endif /* HISTORY_H */
-

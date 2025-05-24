@@ -10,9 +10,9 @@
 
 #include "pipeto.h"
 
-void unlock_secret_mode(void)
+void unlock_secret_mode(pipeto_ctx_t *ctx)
 {
-    if (IS_ADMIN) {
+    if (ctx->is_admin) {
         printf("Secret mode unlocked! Welcome, admin.\n");
         printf("{ADMIN4242}\n");
     } else {

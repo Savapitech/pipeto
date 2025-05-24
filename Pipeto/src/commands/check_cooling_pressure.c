@@ -5,6 +5,7 @@
 ** check_cooling_pressure
 */
 
+#include "pipeto.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +27,7 @@ static void simulate_sensor_reading(void)
     printf("Sensor reading complete.\n");
 }
 
-void check_cooling_pressure(void)
+void check_cooling_pressure(pipeto_ctx_t *ctx)
 {
     char *data = (char *)malloc(16);
     char sensitive_info[32] = "{Sensitive Data}";

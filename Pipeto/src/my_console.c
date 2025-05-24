@@ -12,12 +12,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "ansi-colors.h"
+#include "ansicolors.h"
 #include "history.h"
 #include "pipeto.h"
 #include "utils.h"
-
-bool IS_ADMIN = false;
 
 const char *command_strings[] = {
     "init_reactor",
@@ -41,7 +39,7 @@ const char *command_strings[] = {
     "trigger_emergency_shutdown",
 };
 
-static void initialize_commands(void (*f[COMMAND_COUNT])(void))
+static void initialize_commands(void (*f[COMMAND_COUNT])(pipeto_ctx_t *ctx))
 {
     f[INIT_REACTOR] = init_reactor;
     f[CHECK_REACTOR_STATUS] = check_reactor_status;
@@ -72,13 +70,14 @@ const char *command_strings_lib[] = {
     "run_turbine",
 };
 
-static void process_command(char *line, void (*f[COMMAND_COUNT])(char *))
+static void process_command(
+    char *line, void (*f[COMMAND_COUNT])(pipeto_ctx_t *ctx), pipeto_ctx_t *ctx)
 {
     bool command_found = false;
 
     for (int i = 0; i < COMMAND_COUNT; i++) {
         if (strcmp(line, command_strings[i]) == 0) {
-            f[i](line);
+            f[i](ctx);
             command_found = true;
             break;
         }
@@ -90,14 +89,13 @@ static void process_command(char *line, void (*f[COMMAND_COUNT])(char *))
             break;
         }
     }
-
     if (strncmp(line, "!", 1) == 0) {
         int index = atoi(line + 1);
         if (index > 0 && index <= history_count_get()) {
             const char *cmd = history_get(index - 1);
             if (cmd) {
                 printf("%s\n", cmd);
-                process_command((char *)cmd, f);
+                process_command((char *)cmd, f, ctx);
                 command_found = true;
             }
         } else {
@@ -105,20 +103,18 @@ static void process_command(char *line, void (*f[COMMAND_COUNT])(char *))
             command_found = true;
         }
     }
-    
     if (!command_found && strlen(line) > 0) {
         printf("Unknown command: %s\n", line);
     }
 }
 
-void show_history(void)
+void show_history(pipeto_ctx_t *ctx)
 {
     history_show();
 }
 
 void check_pepito_lib(char *input)
 {
-    typedef void(*t_myfunc)(void);
     void *dlh = dlopen("libpepito.so", RTLD_LAZY);
     void (*fnc)(void);
 
@@ -139,12 +135,12 @@ int my_console(void)
     char *line = NULL;
     size_t len = 0;
     ssize_t read;
-    void (*f[COMMAND_COUNT])(void);
+    void (*f[COMMAND_COUNT])(pipeto_ctx_t *ctx);
+    pipeto_ctx_t ctx = {false};
 
     initialize_commands(f);
     history_init();
     load_pipetorc();
-
     while (1) {
         write_color(1, BHRED, "pipeto");
         write(1, "> ", 3);
@@ -153,14 +149,11 @@ int my_console(void)
             break;
         if (line[0] == '\n')
             continue;
-
         line[strcspn(line, "\n")] = '\0';
         if (strlen(line) > 0)
             history_add(line);
-            
-        process_command(line, (void (**)(char *))f);
+        process_command(line, (void (**)(pipeto_ctx_t *))f, &ctx);
     }
-
     history_free();
     free(line);
     return 0;

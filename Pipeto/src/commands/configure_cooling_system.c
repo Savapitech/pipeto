@@ -5,10 +5,11 @@
 ** configure_cooling_system
 */
 
+#include "pipeto.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-void configure_cooling_system(void)
+void configure_cooling_system(pipeto_ctx_t *ctx)
 {
     char *config_file = "Data/cooling_config.txt";
     char buffer[64];
