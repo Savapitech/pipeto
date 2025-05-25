@@ -28,31 +28,25 @@ void base64_encode(const char *input, char *output)
             char_array_4[2] = ((char_array_3[1] & 0x0f) << 2)
                 + ((char_array_3[2] & 0xc0) >> 6);
             char_array_4[3] = char_array_3[2] & 0x3f;
-
             for (i = 0; i < 4; i++)
                 output[j++] = base64_chars[char_array_4[i]];
             i = 0;
         }
     }
-
     if (i) {
         for (int k = i; k < 3; k++)
             char_array_3[k] = '\0';
-
         char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
         char_array_4[1] = ((char_array_3[0] & 0x03) << 4)
             + ((char_array_3[1] & 0xf0) >> 4);
         char_array_4[2] = ((char_array_3[1] & 0x0f) << 2)
             + ((char_array_3[2] & 0xc0) >> 6);
         char_array_4[3] = char_array_3[2] & 0x3f;
-
         for (int k = 0; k < i + 1; k++)
             output[j++] = base64_chars[char_array_4[k]];
-
         while (i++ < 3)
             output[j++] = '=';
     }
-
     output[j] = '\0';
 }
 

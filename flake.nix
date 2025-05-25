@@ -17,6 +17,8 @@
               criterion
               valgrind
               compiledb
+              openssl
+              libxcrypt
             ];
           };
       });

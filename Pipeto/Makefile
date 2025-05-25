@@ -44,7 +44,8 @@ CC ?= AFL_USE_ASAN=1 afl-gcc-fast
 
 LDLIBS =  -ldl
 
-CFLAGS += -Wall -Wextra -fPIC -fno-stack-protector -Wno-implicit-function-declaration -fno-pie
+CFLAGS += -Wall -Wextra -fPIC -fno-stack-protector
+CFLAGS += -Wno-implicit-function-declaration -fno-pie
 
 CPPFLAGS += -iquote ./include
 
@@ -55,7 +56,7 @@ $(B_OBJ): CFLAGS +=
 $(G_OBJ): CFLAGS += -g3 -ggdb
 
 $(NAME): $(OBJ)
-	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS) -s -no-pie
+	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS) -lcrypto -lssl -s -no-pie
 
 clean:
 	$(RM) $(OBJ)

@@ -18,10 +18,8 @@ void set_reactor_power(pipeto_ctx_t *ctx)
     printf("Enter reactor power level: ");
     fgets(power, sizeof(power), stdin);
     power[strcspn(power, "\n")] = 0;
-
     int input_power = atoi(power);
     int new_power;
-
     if (input_power > INT_MAX - 1000) {
         printf("\nReactor power adjustment may be incorrect.\n");
         printf("Reactor systems are behaving erratically!\n");
@@ -30,9 +28,7 @@ void set_reactor_power(pipeto_ctx_t *ctx)
         printf("Emergency shutdown initiated!\n\n");
         exit(1);
     }
-
     new_power = input_power + 1000;
-
     if (new_power < 0) {
         printf("Reactor power set to an invalid value: %d\n", new_power);
         printf("Reactor core meltdown imminent!\n");
