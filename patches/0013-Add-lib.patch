@@ -1,0 +1,572 @@
+From 2139146057625e9dd8fe5cd247db415a1a209c66 Mon Sep 17 00:00:00 2001
+From: savalet <savinien.petitjean@gmail.com>
+Date: Sun, 25 May 2025 18:03:27 +0200
+Subject: [PATCH 13/19] Add lib
+
+---
+ lib/.env.example                |   4 +
+ lib/.gitignore                  | 134 ++++++++++++++++++++++++++++++++
+ lib/Makefile                    |  40 ++++++++++
+ lib/README.md                   |  63 +++++++++++++++
+ lib/docker-compose.yml          |  18 +++++
+ lib/includes/pepito.h           |  27 +++++++
+ lib/src/init_steam_turbine.c    |  34 ++++++++
+ lib/src/read_turbine_config.c   |  39 ++++++++++
+ lib/src/run_turbine.c           |  34 ++++++++
+ lib/src/turbine_remote_access.c |  35 +++++++++
+ lib/src/turbine_temperature.c   |  35 +++++++++
+ lib_pepito                      |   1 -
+ 12 files changed, 463 insertions(+), 1 deletion(-)
+ create mode 100644 lib/.env.example
+ create mode 100644 lib/.gitignore
+ create mode 100644 lib/Makefile
+ create mode 100644 lib/README.md
+ create mode 100644 lib/docker-compose.yml
+ create mode 100644 lib/includes/pepito.h
+ create mode 100644 lib/src/init_steam_turbine.c
+ create mode 100644 lib/src/read_turbine_config.c
+ create mode 100644 lib/src/run_turbine.c
+ create mode 100644 lib/src/turbine_remote_access.c
+ create mode 100644 lib/src/turbine_temperature.c
+ delete mode 160000 lib_pepito
+
+diff --git a/lib/.env.example b/lib/.env.example
+new file mode 100644
+index 0000000..e6b9687
+--- /dev/null
++++ b/lib/.env.example
+@@ -0,0 +1,4 @@
++DB_USER=postgres
++DB_PASSWORD=postgres
++DB_NAME=db
++DATA_PATH_HOST=./.data/
+diff --git a/lib/.gitignore b/lib/.gitignore
+new file mode 100644
+index 0000000..6e4c6bc
+--- /dev/null
++++ b/lib/.gitignore
+@@ -0,0 +1,134 @@
++# Prerequisites
++*.d
++
++# Object files
++*.o
++*.ko
++*.obj
++*.elf
++
++# Linker output
++*.ilk
++*.map
++*.exp
++
++# Precompiled Headers
++*.gch
++*.pch
++
++# Libraries
++*.lib
++*.a
++*.la
++*.lo
++
++# Shared objects (inc. Windows DLLs)
++*.dll
++*.so
++*.so.*
++*.dylib
++
++# Executables
++*.exe
++*.out
++*.app
++*.i*86
++*.x86_64
++*.hex
++
++# Debug files
++*.dSYM/
++*.su
++*.idb
++*.pdb
++
++# Kernel Module Compile Results
++*.mod*
++*.cmd
++.tmp_versions/
++modules.order
++Module.symvers
++Mkfile.old
++dkms.conf
++
++# Environment
++.env
++
++### JetBrains template
++# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
++# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
++
++# User-specific stuff
++.idea/**/workspace.xml
++.idea/**/tasks.xml
++.idea/**/usage.statistics.xml
++.idea/**/dictionaries
++.idea/**/shelf
++
++# AWS User-specific
++.idea/**/aws.xml
++
++# Generated files
++.idea/**/contentModel.xml
++
++# Sensitive or high-churn files
++.idea/**/dataSources/
++.idea/**/dataSources.ids
++.idea/**/dataSources.local.xml
++.idea/**/sqlDataSources.xml
++.idea/**/dynamic.xml
++.idea/**/uiDesigner.xml
++.idea/**/dbnavigator.xml
++
++# Gradle
++.idea/**/gradle.xml
++.idea/**/libraries
++
++# Gradle and Maven with auto-import
++# When using Gradle or Maven with auto-import, you should exclude module files,
++# since they will be recreated, and may cause churn.  Uncomment if using
++# auto-import.
++# .idea/artifacts
++# .idea/compiler.xml
++# .idea/jarRepositories.xml
++# .idea/modules.xml
++# .idea/*.iml
++# .idea/modules
++# *.iml
++# *.ipr
++
++# CMake
++cmake-build-*/
++
++# Mongo Explorer plugin
++.idea/**/mongoSettings.xml
++
++# File-based project format
++*.iws
++
++# IntelliJ
++out/
++
++# mpeltonen/sbt-idea plugin
++.idea_modules/
++
++# JIRA plugin
++atlassian-ide-plugin.xml
++
++# Cursive Clojure plugin
++.idea/replstate.xml
++
++# SonarLint plugin
++.idea/sonarlint/
++
++# Crashlytics plugin (for Android Studio and IntelliJ)
++com_crashlytics_export_strings.xml
++crashlytics.properties
++crashlytics-build.properties
++fabric.properties
++
++# Editor-based Rest Client
++.idea/httpRequests
++
++# Android studio 3.1+ serialized cache file
++.idea/caches/build_file_checksums.ser
+diff --git a/lib/Makefile b/lib/Makefile
+new file mode 100644
+index 0000000..6c1bb88
+--- /dev/null
++++ b/lib/Makefile
+@@ -0,0 +1,40 @@
++##
++## Makefile for pepito library in /home/pepito
++##
++## Made by Joffrey Z.
++## Login	<alexandre.renaud@epitech.eu>
++##
++## Started on	Mon	Jan	1	11:42:00	1970	Théodore Pierre
++## Last update	Mon	Jan	1	11:21:42	1970	Théo Poche
++##
++
++SRC		=	src/init_steam_turbine.c	\
++			src/read_turbine_config.c	\
++			src/turbine_remote_access.c	\
++			src/turbine_temperature.c	\
++			src/run_turbine.c 	\
++
++OBJ = $(SRC:.c=.o)
++
++NAME =	libpepito.so
++
++LDFLAGS += -shared
++
++CFLAGS += -Wall -Wextra -fPIC
++
++CPPFLAGS += -iquote ./includes
++
++all: $(NAME)
++
++$(NAME): $(OBJ)
++	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
++
++clean:
++	$(RM) $(OBJ)
++
++fclean: clean
++	$(RM) $(NAME)
++
++re: fclean all
++
++.PHONY: all clean fclean re
+diff --git a/lib/README.md b/lib/README.md
+new file mode 100644
+index 0000000..30ecd2d
+--- /dev/null
++++ b/lib/README.md
+@@ -0,0 +1,63 @@
++# Pepito Library
++
++## Overview
++The **Pepito Library** is a robust and modular C library designed to simulate and manage various components of a nuclear reactor's auxiliary systems. It provides a set of functions to initialize, monitor, and control critical subsystems such as steam turbines, temperature regulation, and remote access. The library is developed as part of the **G-SEC-210 Pipeto Project** and adheres to secure software development practices.
++
++This library is intended for educational purposes and is not suitable for real-world nuclear reactor systems.
++
++---
++
++## Features
++The Pepito Library offers the following functionalities:
++- **Steam Turbine Initialization**: Safely initialize and monitor the steam turbine system.
++- **Configuration Management**: Read and apply turbine configuration files.
++- **Temperature Control**: Adjust and monitor turbine temperature.
++- **Remote Access**: Enable and manage secure remote access to turbine systems.
++- **Diagnostics**: Run turbine diagnostics and simulate operational scenarios.
++
++---
++
++## Installation
++
++### Prerequisites
++- GCC or any compatible C compiler.
++- Make utility.
++- Linux-based operating system (recommended for compatibility).
++
++### Build Instructions
++   ```bash
++   $> git clone https://github.com/your-repo/pepito-library.git
++   $> cd pepito-library
++   $> make
++```
++
++---
++
++## Security Considerations
++The Pepito Library is designed for educational purposes and includes intentional vulnerabilities to simulate real-world scenarios. These vulnerabilities are meant to teach secure coding practices and should not be used in production environments.
++
++---
++## Project Structure
++```
++pepito-library/
++├── includes/
++│   └── pepito.h          # Header file for the library
++├── src/
++│   ├── init_steam_turbine.c
++│   ├── read_turbine_config.c
++│   ├── turbine_remote_access.c
++│   ├── turbine_temperature.c
++│   └── run_turbine.c
++├── Makefile              # Build script
++└── README.md             # Project documentation
++```
++
++---
++
++## License
++This project is licensed under the MIT License.
++
++---
++
++## Disclaimer
++The Pepito Library is for educational purposes only. It is not intended for use in real-world nuclear reactor systems or any other critical infrastructure.
+\ No newline at end of file
+diff --git a/lib/docker-compose.yml b/lib/docker-compose.yml
+new file mode 100644
+index 0000000..87b0798
+--- /dev/null
++++ b/lib/docker-compose.yml
+@@ -0,0 +1,18 @@
++services:
++  postgres:
++    image: postgres:latest
++    tty: true
++    environment:
++      POSTGRES_DB: ${DB_NAME}
++      POSTGRES_USER: ${DB_USER}
++      POSTGRES_PASSWORD: ${DB_PASSWORD}
++    volumes:
++      - ${DATA_PATH_HOST}postgres/postgres_data:/var/lib/postgresql/data
++    restart: always
++    shm_size: 128mb
++
++  adminer:
++    image: adminer
++    depends_on:
++      - postgres
++    restart: always
+diff --git a/lib/includes/pepito.h b/lib/includes/pepito.h
+new file mode 100644
+index 0000000..7a58d81
+--- /dev/null
++++ b/lib/includes/pepito.h
+@@ -0,0 +1,27 @@
++/*
++** EPITECH PROJECT, 2024
++** Pepito library
++** File description:
++** pepito.h
++*/
++
++
++#ifndef INCLUDES_PEPITO_H_
++    #define INCLUDES_PEPITO_H_
++
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <limits.h>
++#include <time.h>
++#include <fcntl.h>
++#include <unistd.h>
++
++void init_steam_turbine();
++void read_turbine_config();
++void turbine_remote_access();
++void turbine_temperature();
++void run_turbine();
++
++#endif /* INCLUDES_PEPITO_H_ */
+diff --git a/lib/src/init_steam_turbine.c b/lib/src/init_steam_turbine.c
+new file mode 100644
+index 0000000..423d2b6
+--- /dev/null
++++ b/lib/src/init_steam_turbine.c
+@@ -0,0 +1,34 @@
++/*
++** EPITECH PROJECT, 2024
++** Pepito library
++** File description:
++** init_steam_turbine
++*/
++
++#include "pepito.h"
++
++void init_steam_turbine() {
++    srand(time(NULL));
++
++    printf("Start of the steam turbine initialized\n");
++    sleep(1);
++    printf("Steam turbine status: OK\n");
++    sleep(2);
++    printf("Steam valves status: OPEN\n");
++    sleep(1);
++    printf("Pressurized water tank: OK\n");
++    sleep(1);
++    printf("Pressurized water valves: READY\n");
++    sleep(1);
++    printf("Steam turbine rotor status: OK\n");
++    sleep(2);
++    printf("Starting steam turbine rotor...\n");
++    sleep(1);
++    printf("Steam turbine rotor status: OK\n");
++    sleep(1);
++    printf("Steam turbine rotor current speed: 1000 r/min\n");
++    sleep(1);
++    printf("Reactor initialization complete.\n");
++    sleep(1);
++}
++
+diff --git a/lib/src/read_turbine_config.c b/lib/src/read_turbine_config.c
+new file mode 100644
+index 0000000..552db4e
+--- /dev/null
++++ b/lib/src/read_turbine_config.c
+@@ -0,0 +1,39 @@
++/*
++** EPITECH PROJECT, 2024
++** Pepito library
++** File description:
++** read_turbine_config
++*/
++
++#include "pepito.h"
++
++void read_turbine_config()
++{
++    char file_path[128];
++    char full_path[256];
++    char buffer[256];
++
++    printf("Enter the configuration file name: ");
++    fgets(file_path, sizeof(file_path), stdin);
++    file_path[strcspn(file_path, "\n")] = '\0';
++
++    if (strstr(file_path, "..") != NULL) {
++        printf("Error: Invalid file name.\n");
++        return;
++    }
++
++    snprintf(full_path, sizeof(full_path), "Data/%s", file_path);
++
++    FILE *file = fopen(full_path, "r");
++    if (!file) {
++        printf("Error: Unable to open file: %s\n", full_path);
++        return;
++    }
++
++    printf("Reading configuration file: %s\n", full_path);
++    while (fgets(buffer, sizeof(buffer), file)) {
++        printf("%s", buffer);
++    }
++
++    fclose(file);
++}
+diff --git a/lib/src/run_turbine.c b/lib/src/run_turbine.c
+new file mode 100644
+index 0000000..d0bb0d1
+--- /dev/null
++++ b/lib/src/run_turbine.c
+@@ -0,0 +1,34 @@
++/*
++** EPITECH PROJECT, 2022
++** Pepito library
++** File description:
++** run_turbine
++*/
++
++#include "pepito.h"
++
++void run_turbine() {
++    char input[128];
++    unsigned int i = 0;
++    
++    printf("Enter the number of rotation that the turbine will do (between 0 and 15): ");
++    fgets(input, sizeof(input), stdin);
++    input[strcspn(input, "\n")] = '\0';
++
++    int rotations = atoi(input);
++
++    if (rotations != 0 && rotations > 15) {
++        printf("Invalid number of rotations.\n");
++        return;
++    }
++
++    while (i != (unsigned int)rotations) {
++        if (i > 15) {
++            printf("{ERR0R TURB1NE CAN'T ST0P}\n");
++        }
++        printf("Turbine is running... %d/%d\n", i + 1, rotations);
++        sleep(rand() % 3 + 1);
++        i++;
++    }
++    printf("Turbine has stopped.\n");
++}
+diff --git a/lib/src/turbine_remote_access.c b/lib/src/turbine_remote_access.c
+new file mode 100644
+index 0000000..2e3e394
+--- /dev/null
++++ b/lib/src/turbine_remote_access.c
+@@ -0,0 +1,35 @@
++/*
++** EPITECH PROJECT, 2024
++** Pepito library
++** File description:
++** turbine_remote_access
++*/
++
++#include "pepito.h"
++
++void turbine_remote_access()
++{
++    char temp_file[] = "Data/remote_accessXXXXXX";
++    int fd = mkstemp(temp_file);
++
++    if (fd == -1) {
++        printf("Error: Unable to create temporary file.\n");
++        return;
++    }
++
++    printf("Temporary file created: %s\n", temp_file);
++
++    char credentials[] = "{ACCESS_GRANTED}";
++    write(fd, credentials, strlen(credentials));
++    close(fd);
++
++    printf("Enabling remote access...\n");
++    sleep(5);
++
++    fd = open(temp_file, O_RDONLY);
++    if (fd == -1) {
++        printf("Error: Temporary file was tampered with or deleted.\n");
++        return;
++    }
++    unlink(temp_file);
++}
+diff --git a/lib/src/turbine_temperature.c b/lib/src/turbine_temperature.c
+new file mode 100644
+index 0000000..f85ad9c
+--- /dev/null
++++ b/lib/src/turbine_temperature.c
+@@ -0,0 +1,35 @@
++/*
++** EPITECH PROJECT, 2024
++** Pepito library
++** File description:
++** turbine_temperature
++*/
++
++#include "pepito.h"
++
++void turbine_temperature() {
++    char input[128];
++    
++    printf("Enter the number of degrees you want to increase or decrease the turbine temperature : ");
++    fgets(input, sizeof(input), stdin);
++    input[strcspn(input, "\n")] = '\0';
++
++    int degrees = strtoll(input, NULL, 10);
++
++    if (degrees == INT_MAX - 1 || degrees == INT_MIN + 1) {
++        printf("Turbine temperature is too unstable.\n");
++        printf("{ERR0R TURBINE WILL EXPLODE}\n");
++        exit(1);
++    }
++
++    printf("Turbine temperature is %d degrees.\n", 20);
++
++    if (degrees < 0) {
++        printf("Turbine temperature is decreasing : %d\n", (20 + degrees));
++        return;
++    }
++    else if (degrees > 0) {
++        printf("Turbine temperature is increasing : %d\n", (20 + degrees));
++        return;
++    }
++}
+diff --git a/lib_pepito b/lib_pepito
+deleted file mode 160000
+index 6ce7c6a..0000000
+--- a/lib_pepito
++++ /dev/null
+@@ -1 +0,0 @@
+-Subproject commit 6ce7c6aaa732149ea3bda13837e609a6f5c5dc52
+-- 
+2.48.1
+

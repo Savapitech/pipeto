@@ -1,0 +1,144 @@
+From 4a6a746b0e763154e89877e7ad403938167221fb Mon Sep 17 00:00:00 2001
+From: savalet <savinien.petitjean@gmail.com>
+Date: Sun, 25 May 2025 18:34:36 +0200
+Subject: [PATCH 17/19] Fix send_status_report
+
+---
+ Pipeto/src/commands/check_reactor_status.o | Bin 3248 -> 4256 bytes
+ Pipeto/src/commands/send_status_report.c   |  45 ++-------------------
+ 2 files changed, 3 insertions(+), 42 deletions(-)
+
+diff --git a/Pipeto/src/commands/check_reactor_status.o b/Pipeto/src/commands/check_reactor_status.o
+index c23cf0ceff0f506b059fc8a33408d73fab7f05ad..b0cb95ae7d422dd42dfe0e4a131ad14f99c28d06 100644
+GIT binary patch
+literal 4256
+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
+
+literal 3248
+zcmcIlO=w(I6uvKsCWbgO7QvrZdcjx{)W^IKL<ZD}nQ2EYNk}XdM8}txJIRnYKfd>p
+zHg#cOvS^fmxOCHn;Kofs++>kVOc9GBA*)i+MHkXV!3g4_7UMZH=S*&{69vTs_nmvc
+z`+eX2eeb=OJ$t&tvIK`EUK9r{MuphxIjE-_)wGC<n22w5zp}dLTz7uUtW93Yti8Iq
+zQeSw}sXM!fIr~|so^`Hgo!zYS{dS>X$4{;_)SNTc*Ew%zWOX}N+#SDjZER%g_mjD;
+zyH92YZ_e*NKDbk>kJP@hE?YV8yZA;|e5D?pUYpoFYi%vxeQfc|wTUZ`FZ__Pc7XK{
+zMy}?vuzti8rwZ|(>rQ<WCz-3=Nyi7f`s0I{{scZ`VKvjAyp4UExJk_#Hvb>2qvd=s
+zMyr-v{b{`uT8*h1<L6dyZ6FaA^7kIKYw0%{I{`<vjf$zr4WeRsRtC!TqDmmc$c+|4
+z>CGu`-nMPzU}Vc)uvBd@y`UHsJ=bqZX57eS>SP-m=~YTqUq#C96{F~j<9U@p$w-x|
+zDu4k4g$APrmXc$Ypyc|xs^YulNEZCc1qniu8DL7nvZj4?pbOlYq8k+}W$CL$<%c-h
+zq=A9TEvQ~WO8^Vli1F8W>1sxnR2aImDkYx^ds{r(v6KX=I5Rq$k^^VP&J9Xu*dDSS
+zIg}h4b{yxq<~E8h$P&tZP=F>ngjGk3-$9Go4*-Voa5D+((xk91CamLq-8~-yIRW?y
+z>f50#At$MR5A#SYQR^6wO?2FfB}QUB)YUfO_+8?c{dS$5t=S#!?QE>#Fovy8asOYy
+zM*%se`S6?v2<LWV-hjOTB>}~ZmjP&p=Z?Td<09wjcITV7+xCQN-se0WX<M48E<~XS
+zeWj`*pRWeRa#YBBbMrW-8~A|eg@SJ-$FEeuGwp_QZ@(FTXgD4O<DGQy=z|)L9>PtZ
+zV;ZjeJYx7fK}IJuzCNE*8m{|1ZTRrLO=^7IC#B)K&r62S>olK?#@BtuG+g(YGJMM9
+zb6(@?KGPbm`^*|XACQl)@pYefG(Mj10Pz=(;MX)hp4lhFzpU}`o#%7^NW=Acer))B
+zPClP%eEc@B&u0ez8{%Kp`1-oO(D=Bn3F5CG!I#vJzZEPT!&G6M-(O*eOC|XDLXLuF
+zp5t1eeAkZD#Your%MkW-7z#V6H2xnza_r|1HyvTaucM^OpeR@1V-H`<XW<q0=BYhf
+zUa+e{1^yw?5=hZs&E*S$TT(pH|ClA{acj&kS{g8nZ)x9}Eg{lep?n-N-iI``Ipy#&
+zK-{KH?Snd6;a$MM?<K}5D2VId7{vQXhjl%S>4;~b6FvW}-T^Io4nff)LE~3-5b8XC
+zo<|z6cKT(~|7hr0$9bIeNrU$mEr|bt+|4@9=Sk1~oG+OhLLIDQ-W*i${V}(Dne^to
+zc>Szjh6;L``m3a$U?OEx|1RL|?oX14JU-qZ{D-if?@zn28$+Qf#9lLr2O;B?H1+tc
+cX}48-q(4V`PUikSbcFtG8t8o%Qa1H}0&NT>OaK4?
+
+diff --git a/Pipeto/src/commands/send_status_report.c b/Pipeto/src/commands/send_status_report.c
+index b9eb390..bd160bc 100644
+--- a/Pipeto/src/commands/send_status_report.c
++++ b/Pipeto/src/commands/send_status_report.c
+@@ -5,55 +5,15 @@
+ ** send_status_report
+ */
+ 
++#include "openssl/sha.h"
+ #include "pipeto.h"
+ #include <stdbool.h>
+ #include <stdio.h>
+ 
+-void base64_encode(const char *input, char *output)
+-{
+-    const char *base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+-    int i = 0;
+-    int j = 0;
+-    unsigned char char_array_3[3];
+-    unsigned char char_array_4[4];
+-
+-    while (*input) {
+-        char_array_3[i] = *(input);
+-        input++;
+-        i++;
+-        if (i == 3) {
+-            char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+-            char_array_4[1] = ((char_array_3[0] & 0x03) << 4)
+-                + ((char_array_3[1] & 0xf0) >> 4);
+-            char_array_4[2] = ((char_array_3[1] & 0x0f) << 2)
+-                + ((char_array_3[2] & 0xc0) >> 6);
+-            char_array_4[3] = char_array_3[2] & 0x3f;
+-            for (i = 0; i < 4; i++)
+-                output[j++] = base64_chars[char_array_4[i]];
+-            i = 0;
+-        }
+-    }
+-    if (i) {
+-        for (int k = i; k < 3; k++)
+-            char_array_3[k] = '\0';
+-        char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+-        char_array_4[1] = ((char_array_3[0] & 0x03) << 4)
+-            + ((char_array_3[1] & 0xf0) >> 4);
+-        char_array_4[2] = ((char_array_3[1] & 0x0f) << 2)
+-            + ((char_array_3[2] & 0xc0) >> 6);
+-        char_array_4[3] = char_array_3[2] & 0x3f;
+-        for (int k = 0; k < i + 1; k++)
+-            output[j++] = base64_chars[char_array_4[k]];
+-        while (i++ < 3)
+-            output[j++] = '=';
+-    }
+-    output[j] = '\0';
+-}
+-
+ void send_status_report(pipeto_ctx_t *ctx)
+ {
+     FILE *file = fopen("Data/status_report.txt", "w");
+-    char encoded_report[512];
++    char encoded_report[SHA256_DIGEST_LENGTH];
+     char report[256];
+     const char *hostname = "localhost";
+     const char *ip_address = "127.0.0.1";
+@@ -67,6 +27,7 @@ void send_status_report(pipeto_ctx_t *ctx)
+     snprintf(report, sizeof(report), "Hostname: %s\nIP Address: %s\n%s\n",
+         hostname, ip_address, process_info);
+     base64_encode(report, encoded_report);
++    SHA256((unsigned char *)report, strlen(report), encoded_report);
+     fprintf(file, "Encoded Status Report:\n%s\n", encoded_report);
+     fclose(file);
+     printf("Status report sent and saved to 'Data/status_report.txt'.\n");
+-- 
+2.48.1
+

@@ -1,0 +1,91 @@
+From 8a42c924571bae079451445da6a2d2d17cfc31b5 Mon Sep 17 00:00:00 2001
+From: savalet <savinien.petitjean@gmail.com>
+Date: Tue, 20 May 2025 14:06:32 +0200
+Subject: [PATCH 03/19] Fix help
+
+---
+ Pipeto/src/commands/activate_emergency_protocols.c | 6 +++---
+ Pipeto/src/commands/help.c                         | 5 ++---
+ Pipeto/src/my_console.c                            | 9 +++++----
+ 3 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/Pipeto/src/commands/activate_emergency_protocols.c b/Pipeto/src/commands/activate_emergency_protocols.c
+index 2621b27..7eacb7f 100644
+--- a/Pipeto/src/commands/activate_emergency_protocols.c
++++ b/Pipeto/src/commands/activate_emergency_protocols.c
+@@ -5,9 +5,10 @@
+ ** activate_emergency_protocols
+ */
+ 
++#include <stdbool.h>
+ #include <stdio.h>
+ #include <string.h>
+-#include <stdbool.h>
++
+ #include "pipeto.h"
+ 
+ void activate_emergency_protocols()
+@@ -26,5 +27,4 @@ void activate_emergency_protocols()
+         printf("{Emergency protocols activated, you are now admin !}\n");
+         IS_ADMIN = true;
+     }
+-    return;
+-}
++    }
+diff --git a/Pipeto/src/commands/help.c b/Pipeto/src/commands/help.c
+index 949f0c5..70284c9 100644
+--- a/Pipeto/src/commands/help.c
++++ b/Pipeto/src/commands/help.c
+@@ -6,7 +6,6 @@
+ */
+ 
+ #include <stdio.h>
+-#include <string.h>
+ 
+ void help()
+ {
+@@ -26,7 +25,7 @@ void help()
+         "- load_fuel_rods: Load fuel rods into the reactor.",
+         "- log_system_event: Log a system event.",
+         "- history: Display command history.",
+-        "- !n: Execute command number n from history."
++        "- !n: Execute command number n from history.",
+         "- load_config: Load configuration from a file.",
+         "- configure_cooling_system: Configure the cooling system.",
+         "---- External libraries ----",
+@@ -49,4 +48,4 @@ void help()
+     printf("  to automatically execute commands at startup.\n");
+     printf("  Use 'exec <command>' to execute shell commands.\n");
+     printf("\n");
+-}
+\ No newline at end of file
++}
+diff --git a/Pipeto/src/my_console.c b/Pipeto/src/my_console.c
+index 8ae8cb0..641d24d 100644
+--- a/Pipeto/src/my_console.c
++++ b/Pipeto/src/my_console.c
+@@ -5,16 +5,17 @@
+ ** my_console
+ */
+ 
++#include <dlfcn.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+-#include <unistd.h>
+-#include <dlfcn.h>
+ #include <sys/types.h>
+-#include "pipeto.h"
++#include <unistd.h>
++
+ #include "ansi-colors.h"
+-#include "utils.h"
+ #include "history.h"
++#include "pipeto.h"
++#include "utils.h"
+ 
+ bool IS_ADMIN = false;
+ 
+-- 
+2.48.1
+

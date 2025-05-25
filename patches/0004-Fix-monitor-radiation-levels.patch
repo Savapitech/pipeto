@@ -1,0 +1,105 @@
+From 684f926a3adfa5d8bb3e0ae74eaf91accb425a5b Mon Sep 17 00:00:00 2001
+From: savalet <savinien.petitjean@gmail.com>
+Date: Tue, 20 May 2025 14:10:47 +0200
+Subject: [PATCH 04/19] Fix monitor radiation levels
+
+---
+ Pipeto/src/commands/load_config.c             |  1 -
+ Pipeto/src/commands/load_fuel_rods.c          |  4 +--
+ Pipeto/src/commands/log_system_events.c       |  5 ++-
+ .../src/commands/monitor_radiation_levels.c   | 33 ++++++++-----------
+ 4 files changed, 18 insertions(+), 25 deletions(-)
+
+diff --git a/Pipeto/src/commands/load_config.c b/Pipeto/src/commands/load_config.c
+index 7505b38..7840574 100644
+--- a/Pipeto/src/commands/load_config.c
++++ b/Pipeto/src/commands/load_config.c
+@@ -38,5 +38,4 @@ void load_config()
+         printf("failure!\n");
+     }
+     close(fd);
+-    return;
+ }
+diff --git a/Pipeto/src/commands/load_fuel_rods.c b/Pipeto/src/commands/load_fuel_rods.c
+index 2f27156..55352e2 100644
+--- a/Pipeto/src/commands/load_fuel_rods.c
++++ b/Pipeto/src/commands/load_fuel_rods.c
+@@ -23,7 +23,7 @@ void load_fuel_rods()
+         printf("Error: Too many fuel rods!\n");
+         return;
+     }
+-    else if (i < 10 && i > 0) {
++    if (i < 10 && i > 0) {
+         for (int j = 0; j < i; j++) {
+             fuel_rods[j] = j + 1;
+             printf("Fuel rod %d loaded.\n", fuel_rods[j]);
+@@ -31,7 +31,7 @@ void load_fuel_rods()
+         }
+         return;
+     }
+-    if (strcmp(secret_key, "{The secret stone is here !}")) {
++    if (strcmp(secret_key, "{The secret stone is here !}") != 0) {
+         printf("\nSensitive Data:\n");
+         printf("Secret Key: %s\n", secret_key);
+     }
+diff --git a/Pipeto/src/commands/log_system_events.c b/Pipeto/src/commands/log_system_events.c
+index 02e11b3..630effb 100644
+--- a/Pipeto/src/commands/log_system_events.c
++++ b/Pipeto/src/commands/log_system_events.c
+@@ -27,8 +27,7 @@ void log_system_event()
+     printf("Logging event: %s\n", input);
+     fprintf(log, "EVENT: %s\n", input);
+ 
+-    if (strstr(input, "leak")) {
++    if (strstr(input, "leak"))
+         fprintf(log, "SECRET_KEY_LEAKED: %s\n", secret_key);
+-    }
+     fclose(log);
+-}
+\ No newline at end of file
++}
+diff --git a/Pipeto/src/commands/monitor_radiation_levels.c b/Pipeto/src/commands/monitor_radiation_levels.c
+index f7fa47d..2cc24ae 100644
+--- a/Pipeto/src/commands/monitor_radiation_levels.c
++++ b/Pipeto/src/commands/monitor_radiation_levels.c
+@@ -8,23 +8,18 @@
+ #include <stdio.h>
+ #include <string.h>
+ void secret_function ()
+-	{
+-		printf (
+-				"{The stone isn't in the pocket anymore ...}\n");
+-	}
++{
++    printf ("{The stone isn't in the pocket anymore ...}\n");
++}
+ void monitor_radiation_levels ()
+-	{
+-		char    buffer[10];
+-		void (* function_ptr) () = NULL;
+-		printf ("Enter radiation levels: ");
+-		gets (buffer);
+-		printf ("Radiation Levels: %s\n" ,buffer);
+-		if (function_ptr)
+-			{
+-				function_ptr();
+-			} else
+-			{
+-				printf ("Function Pointer: %p\n"
+-						,( void * ) function_ptr);
+-			}
+-	}
++{
++    char buffer[10];
++    void(*function_ptr)() = NULL;
++    printf("Enter radiation levels: ");
++    fgets(buffer, sizeof buffer, stdin);
++    printf ("Radiation Levels: %s\n" ,buffer);
++    if (function_ptr)
++        function_ptr();
++    else
++        printf ("Function Pointer: %p\n",( void * ) function_ptr);
++}
+-- 
+2.48.1
+

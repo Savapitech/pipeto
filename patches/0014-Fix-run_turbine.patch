@@ -1,0 +1,43 @@
+From a16a9aa6e62106684ec1a86919fb41abb746443b Mon Sep 17 00:00:00 2001
+From: savalet <savinien.petitjean@gmail.com>
+Date: Sun, 25 May 2025 18:03:41 +0200
+Subject: [PATCH 14/19] Fix run_turbine
+
+---
+ lib/src/run_turbine.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/lib/src/run_turbine.c b/lib/src/run_turbine.c
+index d0bb0d1..ad22471 100644
+--- a/lib/src/run_turbine.c
++++ b/lib/src/run_turbine.c
+@@ -6,6 +6,8 @@
+ */
+ 
+ #include "pepito.h"
++#include "unistd.h"
++#include <stdlib.h>
+ 
+ void run_turbine() {
+     char input[128];
+@@ -17,7 +19,7 @@ void run_turbine() {
+ 
+     int rotations = atoi(input);
+ 
+-    if (rotations != 0 && rotations > 15) {
++    if (rotations > 15) {
+         printf("Invalid number of rotations.\n");
+         return;
+     }
+@@ -27,7 +29,7 @@ void run_turbine() {
+             printf("{ERR0R TURB1NE CAN'T ST0P}\n");
+         }
+         printf("Turbine is running... %d/%d\n", i + 1, rotations);
+-        sleep(rand() % 3 + 1);
++        sleep((rand() % 3) + 1);
+         i++;
+     }
+     printf("Turbine has stopped.\n");
+-- 
+2.48.1
+

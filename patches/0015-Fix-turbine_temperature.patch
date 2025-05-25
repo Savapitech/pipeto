@@ -1,0 +1,49 @@
+From 63d0857b93f639f20ac5250d9569433861df1bf4 Mon Sep 17 00:00:00 2001
+From: savalet <savinien.petitjean@gmail.com>
+Date: Sun, 25 May 2025 18:10:56 +0200
+Subject: [PATCH 15/19] Fix turbine_temperature
+
+---
+ lib/src/turbine_temperature.c | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
+
+diff --git a/lib/src/turbine_temperature.c b/lib/src/turbine_temperature.c
+index f85ad9c..40d10d5 100644
+--- a/lib/src/turbine_temperature.c
++++ b/lib/src/turbine_temperature.c
+@@ -9,27 +9,24 @@
+ 
+ void turbine_temperature() {
+     char input[128];
++    long long degress;
+     
+     printf("Enter the number of degrees you want to increase or decrease the turbine temperature : ");
+     fgets(input, sizeof(input), stdin);
+     input[strcspn(input, "\n")] = '\0';
+-
+-    int degrees = strtoll(input, NULL, 10);
+-
++    degrees = strtoll(input, NULL, 10);
+     if (degrees == INT_MAX - 1 || degrees == INT_MIN + 1) {
+         printf("Turbine temperature is too unstable.\n");
+         printf("{ERR0R TURBINE WILL EXPLODE}\n");
+         exit(1);
+     }
+-
+     printf("Turbine temperature is %d degrees.\n", 20);
+-
+     if (degrees < 0) {
+-        printf("Turbine temperature is decreasing : %d\n", (20 + degrees));
++        printf("Turbine temperature is decreasing : %lld\n", (20 + degrees));
+         return;
+     }
+-    else if (degrees > 0) {
+-        printf("Turbine temperature is increasing : %d\n", (20 + degrees));
++    if (degrees > 0) {
++        printf("Turbine temperature is increasing : %lld\n", (20 + degrees));
+         return;
+     }
+ }
+-- 
+2.48.1
+

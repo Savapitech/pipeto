@@ -1,0 +1,49 @@
+From 4c53a93bd6a1640afef0ac8eb5a7fe33c3804368 Mon Sep 17 00:00:00 2001
+From: savalet <savinien.petitjean@gmail.com>
+Date: Sat, 24 May 2025 18:53:34 +0200
+Subject: [PATCH 08/19] Fix log system event
+
+---
+ Pipeto/src/commands/log_system_events.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/Pipeto/src/commands/log_system_events.c b/Pipeto/src/commands/log_system_events.c
+index cdde77b..b7ccfae 100644
+--- a/Pipeto/src/commands/log_system_events.c
++++ b/Pipeto/src/commands/log_system_events.c
+@@ -5,16 +5,19 @@
+ ** log_system_events
+ */
+ 
+-#include "pipeto.h"
++#include <fcntl.h>
+ #include <stdio.h>
+ #include <string.h>
+ 
+-void log_system_event(pipeto_ctx_t *ctx)
++#include "pipeto.h"
++
++void log_system_event(pipeto_ctx_t *ctx[[gnu::unused]])
+ {
+     char command[100];
+     char input[100];
+     char secret_key[32] = "{SECRET_LOG_12PIERRE34}";
+     FILE *log;
++    int fd;
+ 
+     printf("Enter command: ");
+     fgets(input, sizeof(input), stdin);
+@@ -24,6 +27,10 @@ void log_system_event(pipeto_ctx_t *ctx)
+         printf("Error: Unable to open log file 'Data/system.log'.\n");
+         return;
+     }
++    fd = fileno(log);
++    if (fd < 0)
++        return;
++    flock(fd, LOCK_EX);
+     printf("Logging event: %s\n", input);
+     fprintf(log, "EVENT: %s\n", input);
+     if (strstr(input, "leak"))
+-- 
+2.48.1
+

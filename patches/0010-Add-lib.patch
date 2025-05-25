@@ -1,0 +1,20 @@
+From f01c39e5bf960fbc098371288071cc55e510a0a1 Mon Sep 17 00:00:00 2001
+From: savalet <savinien.petitjean@gmail.com>
+Date: Sat, 24 May 2025 19:08:25 +0200
+Subject: [PATCH 10/19] Add lib
+
+---
+ lib_pepito | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 160000 lib_pepito
+
+diff --git a/lib_pepito b/lib_pepito
+new file mode 160000
+index 0000000..6ce7c6a
+--- /dev/null
++++ b/lib_pepito
+@@ -0,0 +1 @@
++Subproject commit 6ce7c6aaa732149ea3bda13837e609a6f5c5dc52
+-- 
+2.48.1
+

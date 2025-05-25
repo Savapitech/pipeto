@@ -1,0 +1,33 @@
+From e32fb90bc71e72878727732293c415196020232b Mon Sep 17 00:00:00 2001
+From: savalet <savinien.petitjean@gmail.com>
+Date: Tue, 20 May 2025 14:04:51 +0200
+Subject: [PATCH 02/19] Fix check cooling pressure
+
+---
+ Pipeto/src/commands/check_cooling_pressure.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/Pipeto/src/commands/check_cooling_pressure.c b/Pipeto/src/commands/check_cooling_pressure.c
+index caf99fb..902da00 100644
+--- a/Pipeto/src/commands/check_cooling_pressure.c
++++ b/Pipeto/src/commands/check_cooling_pressure.c
+@@ -38,14 +38,13 @@ void check_cooling_pressure()
+     printf("Checking cooling pressure...\n");
+     sleep(1);
+     log_pressure_status(data);
+-    free(data);
+     sleep(3);
+-    if (strcmp(data, "Pressure OK")) {
++    if (strcmp(data, "Pressure OK") != 0)
+         printf("Sensitive Info: %s\n", sensitive_info);
+-    }
+     char temp_buffer[32];
+     snprintf(temp_buffer, sizeof(temp_buffer), "Temporary data: %d", rand() % 100);
+     printf("Temporary buffer: %s\n", temp_buffer);
+     simulate_sensor_reading();
+     printf("Cooling pressure check complete.\n");
++    free(data);
+ }
+-- 
+2.48.1
+

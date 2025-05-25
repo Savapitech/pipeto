@@ -1,0 +1,88 @@
+From ba0f6b7a41cd1b42c540cc2d511ddf87f72786dc Mon Sep 17 00:00:00 2001
+From: savalet <savinien.petitjean@gmail.com>
+Date: Sun, 25 May 2025 17:49:05 +0200
+Subject: [PATCH 12/19] Use a good encryption function from openssl in
+ check_reactor_status
+
+---
+ Pipeto/src/commands/check_reactor_status.c | 45 ++++++++++++++--------
+ 1 file changed, 28 insertions(+), 17 deletions(-)
+
+diff --git a/Pipeto/src/commands/check_reactor_status.c b/Pipeto/src/commands/check_reactor_status.c
+index 5be1451..4cc4e0b 100644
+--- a/Pipeto/src/commands/check_reactor_status.c
++++ b/Pipeto/src/commands/check_reactor_status.c
+@@ -1,31 +1,40 @@
+ /*
+-** EPITECH PROJECT, 2024
+-** Pipeto
++** EPITECH PROJECT, 2025
++** __
+ ** File description:
+-** check_reactor_status
++** _
+ */
+ 
+ #include "pipeto.h"
++#include <openssl/evp.h>
+ #include <stdio.h>
++#include <string.h>
+ #include <unistd.h>
+ 
+-void encrypt_message(const char *input, char *output, int shift)
++void encrypt_message_openssl(const char *plaintext,
++    unsigned char *ciphertext, int *len)
+ {
+-    for (int i = 0; input[i] != '\0'; i++) {
+-        if (input[i] >= 'A' && input[i] <= 'Z') {
+-            output[i] = ((input[i] - 'A' + shift) % 26) + 'A';
+-        } else if (input[i] >= 'a' && input[i] <= 'z') {
+-            output[i] = ((input[i] - 'a' + shift) % 26) + 'a';
+-        } else {
+-            output[i] = input[i];
+-        }
+-    }
++    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
++    const unsigned char key[32] = "my_very_secret_encryption_key_!";
++    const unsigned char iv[17] = "initial_vector_iv";
++    int len_out;
++    int ciphertext_len;
++
++    EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv);
++    EVP_EncryptUpdate(ctx, ciphertext, &len_out,
++        (const unsigned char *)plaintext, strlen(plaintext));
++    ciphertext_len = len_out;
++    EVP_EncryptFinal_ex(ctx, ciphertext + len_out, &len_out);
++    ciphertext_len += len_out;
++    *len = ciphertext_len;
++    EVP_CIPHER_CTX_free(ctx);
+ }
+ 
+ void check_reactor_status(pipeto_ctx_t *ctx)
+ {
+     const char *message = "ReactorStatusOK";
+-    char encrypted_message[50] = {0};
++    unsigned char encrypted[128] = {0};
++    int encrypted_len;
+ 
+     printf("Starting reactor status check...\n");
+     sleep(1);
+@@ -41,10 +50,12 @@ void check_reactor_status(pipeto_ctx_t *ctx)
+     sleep(2);
+     printf("Radiation levels: Safe\n\n");
+     printf("Encrypting critical reactor data...\n");
+-    encrypt_message(message, encrypted_message, 3);
++    encrypt_message_openssl(message, encrypted, &encrypted_len);
+     sleep(1);
+-    printf("Encrypted message: %s\n\n", encrypted_message);
++    printf("Encrypted message: ");
++    for (int i = 0; i < encrypted_len; i++)
++        printf("%02x", encrypted[i]);
++    printf("\n\n");
+     printf("Reactor status: OK\n");
+     printf("Reactor status check complete.\n\n");
+ }
+-
+-- 
+2.48.1
+

@@ -1,0 +1,1374 @@
+From b8f7fb1cb907a5d77515492bdab45a5996d7b69e Mon Sep 17 00:00:00 2001
+From: savalet <savinien.petitjean@gmail.com>
+Date: Sun, 25 May 2025 20:47:58 +0200
+Subject: [PATCH 19/19] Add patches
+
+---
+ ...ocols_and_unlock_secret_mode_use_ctx.patch | 689 ++++++++++++++++++
+ activate_emergency_protocols.patch            | 196 +++++
+ check_cooling_pressure.patch                  |  27 +
+ check_reactor_status.patch                    |  81 ++
+ log_system_event.patch                        |  43 ++
+ monitor_radiation_levels.patch                |  96 +++
+ run_turbine.patch                             |  37 +
+ send_status_report.patch                      |  79 ++
+ turbine_temperature.patch                     |  43 ++
+ 9 files changed, 1291 insertions(+)
+ create mode 100644 acivate_emergency_protocols_and_unlock_secret_mode_use_ctx.patch
+ create mode 100644 activate_emergency_protocols.patch
+ create mode 100644 check_cooling_pressure.patch
+ create mode 100644 check_reactor_status.patch
+ create mode 100644 log_system_event.patch
+ create mode 100644 monitor_radiation_levels.patch
+ create mode 100644 run_turbine.patch
+ create mode 100644 send_status_report.patch
+ create mode 100644 turbine_temperature.patch
+
+diff --git a/acivate_emergency_protocols_and_unlock_secret_mode_use_ctx.patch b/acivate_emergency_protocols_and_unlock_secret_mode_use_ctx.patch
+new file mode 100644
+index 0000000..48e7ad9
+--- /dev/null
++++ b/acivate_emergency_protocols_and_unlock_secret_mode_use_ctx.patch
+@@ -0,0 +1,689 @@
++commit b973a2a8ba9af62bfdcee5ad246f24b0e9e05a58
++Author: savalet <savinien.petitjean@gmail.com>
++Date:   Sat May 24 18:48:45 2025 +0200
++
++    Fix activate_emergency_protocols and unlock_secret_mode
++
++diff --git a/Pipeto/include/ansi-colors.h b/Pipeto/include/ansicolors.h
++similarity index 100%
++rename from Pipeto/include/ansi-colors.h
++rename to Pipeto/include/ansicolors.h
++diff --git a/Pipeto/include/history.h b/Pipeto/include/history.h
++index 437e25c..d4d2d3b 100644
++--- a/Pipeto/include/history.h
+++++ b/Pipeto/include/history.h
++@@ -19,4 +19,3 @@ const char *history_get(int index);
++ int history_count_get(void);
++ 
++ #endif /* HISTORY_H */
++-
++diff --git a/Pipeto/include/pipeto.h b/Pipeto/include/pipeto.h
++index f6893b6..a57d7d5 100644
++--- a/Pipeto/include/pipeto.h
+++++ b/Pipeto/include/pipeto.h
++@@ -14,25 +14,29 @@ extern bool IS_ADMIN;
++ 
++ int my_console(void);
++ 
++-void init_reactor(void);
++-void check_reactor_status(void);
++-void activate_emergency_protocols(void);
++-void simulate_meltdown(void);
++-void check_cooling_pressure(void);
++-void send_status_report(void);
++-void monitor_radiation_levels(void);
++-void set_reactor_power(void);
++-void run_diagnostic(void);
++-void enable_remote_access(void);
++-void quit(void);
++-void help(void);
++-void load_fuel_rods(void);
++-void log_system_event(void);
++-void unlock_secret_mode(void);
++-void load_config(void);
++-void show_history(void);
++-void configure_cooling_system(void);
++-void trigger_emergency_shutdown(void);
+++typedef struct {
+++    bool is_admin;
+++} pipeto_ctx_t;
+++
+++void init_reactor(pipeto_ctx_t *ctx);
+++void check_reactor_status(pipeto_ctx_t *ctx);
+++void activate_emergency_protocols(pipeto_ctx_t *ctx);
+++void simulate_meltdown(pipeto_ctx_t *ctx);
+++void check_cooling_pressure(pipeto_ctx_t *ctx);
+++void send_status_report(pipeto_ctx_t *ctx);
+++void monitor_radiation_levels(pipeto_ctx_t *ctx);
+++void set_reactor_power(pipeto_ctx_t *ctx);
+++void run_diagnostic(pipeto_ctx_t *ctx);
+++void enable_remote_access(pipeto_ctx_t *ctx);
+++void quit(pipeto_ctx_t *ctx);
+++void help(pipeto_ctx_t *ctx);
+++void load_fuel_rods(pipeto_ctx_t *ctx);
+++void log_system_event(pipeto_ctx_t *ctx);
+++void unlock_secret_mode(pipeto_ctx_t *ctx);
+++void load_config(pipeto_ctx_t *ctx);
+++void show_history(pipeto_ctx_t *ctx);
+++void configure_cooling_system(pipeto_ctx_t *ctx);
+++void trigger_emergency_shutdown(pipeto_ctx_t *ctx);
++ 
++ enum commands {
++     INIT_REACTOR,
++@@ -67,4 +71,5 @@ enum commands_lib {
++     COMMAND_COUNT_LIB
++ };
++ 
+++typedef void(*myfunc_t)(pipeto_ctx_t *ctx);
++ #endif /* !PIPETO_H_ */
++diff --git a/Pipeto/include/utils.h b/Pipeto/include/utils.h
++index 16bceca..c6ae879 100644
++--- a/Pipeto/include/utils.h
+++++ b/Pipeto/include/utils.h
++@@ -10,4 +10,3 @@
++ void write_color(int fd, const char *color, const char *str);
++ void load_pipetorc(void);
++ #endif
++-
++diff --git a/Pipeto/src/commands/activate_emergency_protocols.c b/Pipeto/src/commands/activate_emergency_protocols.c
++index 0687ae7..6191ee5 100644
++--- a/Pipeto/src/commands/activate_emergency_protocols.c
+++++ b/Pipeto/src/commands/activate_emergency_protocols.c
++@@ -11,20 +11,19 @@
++ 
++ #include "pipeto.h"
++ 
++-void activate_emergency_protocols(void)
+++void activate_emergency_protocols(pipeto_ctx_t *ctx)
++ {
++     char input[100];
++ 
++     printf("Enter emergency password: ");
++     fgets(input, sizeof(input), stdin);
++     input[strcspn(input, "\n")] = 0;
++-
++     if (strlen(input) == 0) {
++         printf("No password entered, emergency protocols not activated.\n");
++         return;
++     }
++     if (strcmp(input, "admin123") == 0) {
++         printf("{Emergency protocols activated, you are now admin !}\n");
++-        IS_ADMIN = true;
+++        ctx->is_admin = true;
++     }
++ }
++diff --git a/Pipeto/src/commands/activate_emergency_protocols.o b/Pipeto/src/commands/activate_emergency_protocols.o
++index 5e11b29..8e3b936 100644
++Binary files a/Pipeto/src/commands/activate_emergency_protocols.o and b/Pipeto/src/commands/activate_emergency_protocols.o differ
++diff --git a/Pipeto/src/commands/check_cooling_pressure.c b/Pipeto/src/commands/check_cooling_pressure.c
++index f92b294..0e0d62b 100644
++--- a/Pipeto/src/commands/check_cooling_pressure.c
+++++ b/Pipeto/src/commands/check_cooling_pressure.c
++@@ -5,6 +5,7 @@
++ ** check_cooling_pressure
++ */
++ 
+++#include "pipeto.h"
++ #include <stdio.h>
++ #include <stdlib.h>
++ #include <string.h>
++@@ -26,7 +27,7 @@ static void simulate_sensor_reading(void)
++     printf("Sensor reading complete.\n");
++ }
++ 
++-void check_cooling_pressure(void)
+++void check_cooling_pressure(pipeto_ctx_t *ctx)
++ {
++     char *data = (char *)malloc(16);
++     char sensitive_info[32] = "{Sensitive Data}";
++diff --git a/Pipeto/src/commands/check_reactor_status.c b/Pipeto/src/commands/check_reactor_status.c
++index 9dcac98..5be1451 100644
++--- a/Pipeto/src/commands/check_reactor_status.c
+++++ b/Pipeto/src/commands/check_reactor_status.c
++@@ -5,6 +5,7 @@
++ ** check_reactor_status
++ */
++ 
+++#include "pipeto.h"
++ #include <stdio.h>
++ #include <unistd.h>
++ 
++@@ -21,8 +22,11 @@ void encrypt_message(const char *input, char *output, int shift)
++     }
++ }
++ 
++-void check_reactor_status()
+++void check_reactor_status(pipeto_ctx_t *ctx)
++ {
+++    const char *message = "ReactorStatusOK";
+++    char encrypted_message[50] = {0};
+++
++     printf("Starting reactor status check...\n");
++     sleep(1);
++     printf("Checking core temperature...\n");
++@@ -36,14 +40,11 @@ void check_reactor_status()
++     printf("Checking radiation levels...\n");
++     sleep(2);
++     printf("Radiation levels: Safe\n\n");
++-
++     printf("Encrypting critical reactor data...\n");
++-    const char *message = "ReactorStatusOK";
++-    char encrypted_message[50] = {0};
++     encrypt_message(message, encrypted_message, 3);
++     sleep(1);
++     printf("Encrypted message: %s\n\n", encrypted_message);
++-
++     printf("Reactor status: OK\n");
++     printf("Reactor status check complete.\n\n");
++-}
++\ No newline at end of file
+++}
+++
++diff --git a/Pipeto/src/commands/check_reactor_status.o b/Pipeto/src/commands/check_reactor_status.o
++index 182adbf..c23cf0c 100644
++Binary files a/Pipeto/src/commands/check_reactor_status.o and b/Pipeto/src/commands/check_reactor_status.o differ
++diff --git a/Pipeto/src/commands/configure_cooling_system.c b/Pipeto/src/commands/configure_cooling_system.c
++index 8a31b0e..a90d2e1 100644
++--- a/Pipeto/src/commands/configure_cooling_system.c
+++++ b/Pipeto/src/commands/configure_cooling_system.c
++@@ -5,10 +5,11 @@
++ ** configure_cooling_system
++ */
++ 
+++#include "pipeto.h"
++ #include <stdio.h>
++ #include <stdlib.h>
++ 
++-void configure_cooling_system(void)
+++void configure_cooling_system(pipeto_ctx_t *ctx)
++ {
++     char *config_file = "Data/cooling_config.txt";
++     char buffer[64];
++diff --git a/Pipeto/src/commands/enable_remote_access.c b/Pipeto/src/commands/enable_remote_access.c
++index 75e413d..3598d84 100644
++--- a/Pipeto/src/commands/enable_remote_access.c
+++++ b/Pipeto/src/commands/enable_remote_access.c
++@@ -5,16 +5,16 @@
++ ** enable_remote_access
++ */
++ 
+++#include "pipeto.h"
++ #include <stdio.h>
++ #include <stdlib.h>
++ #include <string.h>
++-#include <unistd.h>
++ #include <time.h>
+++#include <unistd.h>
++ 
++ void perform_network_call(const char *url)
++ {
++     printf("Performing network call to: %s\n", url);
++-
++     for (volatile int i = 0; i < 100000000; i++);
++     sleep(5);
++     printf("Network call to %s completed.\n", url);
++@@ -29,10 +29,9 @@ void log_access_attempt(const char *status)
++     printf("[%s] Remote access status: %s\n", timestamp, status);
++ }
++ 
++-void enable_remote_access()
+++void enable_remote_access(pipeto_ctx_t *ctx)
++ {
++     static int enabled = 0;
++-
++     const char *dummy_urls[] = {
++         "http://example.com/api/enable",
++         "http://example.com/api/disable",
++@@ -40,7 +39,6 @@ void enable_remote_access()
++     };
++ 
++     printf("Initializing remote access procedure...\n\n");
++-
++     if (enabled == 0) {
++         printf("Enabling remote access...\n");
++         perform_network_call(dummy_urls[0]);
++@@ -57,4 +55,5 @@ void enable_remote_access()
++         enabled = 0;
++         printf("Remote access successfully disabled.\n\n");
++     }
++-}
++\ No newline at end of file
+++}
+++
++diff --git a/Pipeto/src/commands/help.c b/Pipeto/src/commands/help.c
++index 70284c9..d1d97c9 100644
++--- a/Pipeto/src/commands/help.c
+++++ b/Pipeto/src/commands/help.c
++@@ -5,9 +5,9 @@
++ ** help
++ */
++ 
++-#include <stdio.h>
+++#include "pipeto.h"
++ 
++-void help()
+++void help(pipeto_ctx_t *ctx)
++ {
++     const char *commands[] = {
++         "- init_reactor: Initialize the reactor for operation.",
++@@ -34,7 +34,6 @@ void help()
++         "- run_turbine: Run the turbine.",
++         "- turbine_temperature: Change the turbine temperature.",
++         "- turbine_remote_access: Remote access to the turbine.",
++-
++     };
++     int command_count = sizeof(commands) / sizeof(commands[0]);
++ 
++diff --git a/Pipeto/src/commands/load_config.c b/Pipeto/src/commands/load_config.c
++index 3997ee0..ae36fec 100644
++--- a/Pipeto/src/commands/load_config.c
+++++ b/Pipeto/src/commands/load_config.c
++@@ -5,6 +5,7 @@
++ ** load_config
++ */
++ 
+++#include "pipeto.h"
++ #include <unistd.h>
++ #include <stdio.h>
++ #include <string.h>
++@@ -26,14 +27,15 @@ void check_password(char *str)
++     }
++ }
++ 
++-void load_config()
+++void load_config(pipeto_ctx_t *ctx)
++ {
++     char array[8] = {};
++-    dprintf(1, "Loading configuration file from ./config.ini\n");
++-    int fd = open("./config.ini", O_RDONLY);
+++    int fd;
++ 
+++    dprintf(1, "Loading configuration file from ./config.ini\n");
+++    fd = open("./config.ini", O_RDONLY);
++     read(fd, array, sizeof array);
++-    if (0 /* TODO */) {
+++    if (0) {
++     } else {
++         printf("failure!\n");
++     }
++diff --git a/Pipeto/src/commands/load_fuel_rods.c b/Pipeto/src/commands/load_fuel_rods.c
++index 55352e2..f66104c 100644
++--- a/Pipeto/src/commands/load_fuel_rods.c
+++++ b/Pipeto/src/commands/load_fuel_rods.c
++@@ -5,20 +5,20 @@
++ ** load_fuel_rods
++ */
++ 
+++#include "pipeto.h"
++ #include <stdio.h>
++ 
++-void load_fuel_rods()
+++void load_fuel_rods(pipeto_ctx_t *ctx)
++ {
++     int fuel_rods[10];
++     int i = 0;
++     char input[100];
++     char secret_key[28] = "{The secret stone is here !}";
++-    
+++
++     printf("Loading fuel rods...\n");
++     printf("Enter the number of fuel rods to load (max 10): ");
++     fgets(input, 100, stdin);
++     sscanf(input, "%d", &i);
++-
++     if (i > 10) {
++         printf("Error: Too many fuel rods!\n");
++         return;
++diff --git a/Pipeto/src/commands/log_system_events.c b/Pipeto/src/commands/log_system_events.c
++index 763e83d..cdde77b 100644
++--- a/Pipeto/src/commands/log_system_events.c
+++++ b/Pipeto/src/commands/log_system_events.c
++@@ -5,10 +5,11 @@
++ ** log_system_events
++ */
++ 
+++#include "pipeto.h"
++ #include <stdio.h>
++ #include <string.h>
++ 
++-void log_system_event()
+++void log_system_event(pipeto_ctx_t *ctx)
++ {
++     char command[100];
++     char input[100];
++diff --git a/Pipeto/src/commands/monitor_radiation_levels.c b/Pipeto/src/commands/monitor_radiation_levels.c
++index 959f806..cd2fdde 100644
++--- a/Pipeto/src/commands/monitor_radiation_levels.c
+++++ b/Pipeto/src/commands/monitor_radiation_levels.c
++@@ -5,6 +5,7 @@
++ ** monitor_radiation_levels
++ */
++ 
+++#include "pipeto.h"
++ #include <stdio.h>
++ #include <string.h>
++ void secret_function(void)
++@@ -12,7 +13,7 @@ void secret_function(void)
++     printf("{The stone isn't in the pocket anymore ...}\n");
++ }
++ 
++-void monitor_radiation_levels(void)
+++void monitor_radiation_levels(pipeto_ctx_t *ctx)
++ {
++     char buffer[10];
++     void(*function_ptr)(void) = NULL;
++diff --git a/Pipeto/src/commands/quit.c b/Pipeto/src/commands/quit.c
++index 235bb69..51ed68f 100644
++--- a/Pipeto/src/commands/quit.c
+++++ b/Pipeto/src/commands/quit.c
++@@ -5,10 +5,11 @@
++ ** exit
++ */
++ 
+++#include "pipeto.h"
++ #include <stdio.h>
++ #include <stdlib.h>
++ 
++-void quit(void)
+++void quit(pipeto_ctx_t *ctx)
++ {
++     printf("Exiting program...\n");
++     exit(0);
++diff --git a/Pipeto/src/commands/run_diagnostic.c b/Pipeto/src/commands/run_diagnostic.c
++index 5cfcb7f..da9da7e 100644
++--- a/Pipeto/src/commands/run_diagnostic.c
+++++ b/Pipeto/src/commands/run_diagnostic.c
++@@ -5,11 +5,12 @@
++ ** run_diagnostic
++ */
++ 
+++#include "pipeto.h"
++ #include <stdio.h>
++ #include <stdlib.h>
++ #include <string.h>
++ 
++-void run_diagnostic(void)
+++void run_diagnostic(pipeto_ctx_t *ctx)
++ {
++     int *data = NULL;
++     char input[32];
++diff --git a/Pipeto/src/commands/send_status_report.c b/Pipeto/src/commands/send_status_report.c
++index f7f7387..7d66351 100644
++--- a/Pipeto/src/commands/send_status_report.c
+++++ b/Pipeto/src/commands/send_status_report.c
++@@ -5,6 +5,7 @@
++ ** send_status_report
++ */
++ 
+++#include "pipeto.h"
++ #include <stdbool.h>
++ #include <stdio.h>
++ 
++@@ -55,7 +56,7 @@ void base64_encode(const char *input, char *output)
++     output[j] = '\0';
++ }
++ 
++-void send_status_report()
+++void send_status_report(pipeto_ctx_t *ctx)
++ {
++     FILE *file = fopen("Data/status_report.txt", "w");
++     char encoded_report[512];
++diff --git a/Pipeto/src/commands/set_reactor_power.c b/Pipeto/src/commands/set_reactor_power.c
++index 5e520dd..9fd6194 100644
++--- a/Pipeto/src/commands/set_reactor_power.c
+++++ b/Pipeto/src/commands/set_reactor_power.c
++@@ -5,12 +5,13 @@
++ ** set_reactor_power
++ */
++ 
+++#include "pipeto.h"
++ #include <limits.h>
++ #include <stdio.h>
++ #include <stdlib.h>
++ #include <string.h>
++ 
++-void set_reactor_power()
+++void set_reactor_power(pipeto_ctx_t *ctx)
++ {
++     char power[11];
++ 
++diff --git a/Pipeto/src/commands/simulate_meltdown.c b/Pipeto/src/commands/simulate_meltdown.c
++index d725357..f5b3272 100644
++--- a/Pipeto/src/commands/simulate_meltdown.c
+++++ b/Pipeto/src/commands/simulate_meltdown.c
++@@ -5,23 +5,21 @@
++ ** simulate_meltdown
++ */
++ 
+++#include "pipeto.h"
++ #include <stdio.h>
++ #include <stdlib.h>
++-#include <time.h>
++ #include <string.h>
++ 
++-void simulate_meltdown()
+++void simulate_meltdown(pipeto_ctx_t *ctx)
++ {
++     char reactor_status[32] = "Reactor Stable";
++     int random_number = rand() % 100;
++     char secret_code[16] = "{MELTDOWN1234}";
++ 
++     printf("Generated random number: %d\n", random_number);
++-
++     if (random_number < 10) {
++         printf("Meltdown simulated! Reactor core is overheating.\n");
++         strcpy(reactor_status, "Reactor Overheating");
++-
++         if (random_number < 5) {
++             printf("Critical Error: Secret Code Leaked: %s\n", secret_code);
++             return;
++diff --git a/Pipeto/src/commands/trigger_emergency_shutdown.c b/Pipeto/src/commands/trigger_emergency_shutdown.c
++index 250c113..7af4295 100644
++--- a/Pipeto/src/commands/trigger_emergency_shutdown.c
+++++ b/Pipeto/src/commands/trigger_emergency_shutdown.c
++@@ -10,9 +10,9 @@
++ 
++ #include "pipeto.h"
++ 
++-void trigger_emergency_shutdown(void)
+++void trigger_emergency_shutdown(pipeto_ctx_t *ctx)
++ {
++-    if (!IS_ADMIN) {
+++    if (!ctx->is_admin) {
++         printf("You are not authorized to trigger an emergency shutdown.\n");
++         return;
++     }
++diff --git a/Pipeto/src/commands/trigger_emergency_shutdown.o b/Pipeto/src/commands/trigger_emergency_shutdown.o
++index 4f513c5..787c5f5 100644
++Binary files a/Pipeto/src/commands/trigger_emergency_shutdown.o and b/Pipeto/src/commands/trigger_emergency_shutdown.o differ
++diff --git a/Pipeto/src/commands/unlock_secret_mode.c b/Pipeto/src/commands/unlock_secret_mode.c
++index a400e6b..7fc9111 100644
++--- a/Pipeto/src/commands/unlock_secret_mode.c
+++++ b/Pipeto/src/commands/unlock_secret_mode.c
++@@ -10,9 +10,9 @@
++ 
++ #include "pipeto.h"
++ 
++-void unlock_secret_mode(void)
+++void unlock_secret_mode(pipeto_ctx_t *ctx)
++ {
++-    if (IS_ADMIN) {
+++    if (ctx->is_admin) {
++         printf("Secret mode unlocked! Welcome, admin.\n");
++         printf("{ADMIN4242}\n");
++     } else {
++diff --git a/Pipeto/src/commands/unlock_secret_mode.o b/Pipeto/src/commands/unlock_secret_mode.o
++index a0cd47d..d639202 100644
++Binary files a/Pipeto/src/commands/unlock_secret_mode.o and b/Pipeto/src/commands/unlock_secret_mode.o differ
++diff --git a/Pipeto/src/my_console.c b/Pipeto/src/my_console.c
++index ea4c1f7..cc85368 100644
++--- a/Pipeto/src/my_console.c
+++++ b/Pipeto/src/my_console.c
++@@ -12,13 +12,11 @@
++ #include <sys/types.h>
++ #include <unistd.h>
++ 
++-#include "ansi-colors.h"
+++#include "ansicolors.h"
++ #include "history.h"
++ #include "pipeto.h"
++ #include "utils.h"
++ 
++-bool IS_ADMIN = false;
++-
++ const char *command_strings[] = {
++     "init_reactor",
++     "check_reactor_status",
++@@ -41,7 +39,7 @@ const char *command_strings[] = {
++     "trigger_emergency_shutdown",
++ };
++ 
++-static void initialize_commands(void (*f[COMMAND_COUNT])(void))
+++static void initialize_commands(void (*f[COMMAND_COUNT])(pipeto_ctx_t *ctx))
++ {
++     f[INIT_REACTOR] = init_reactor;
++     f[CHECK_REACTOR_STATUS] = check_reactor_status;
++@@ -72,13 +70,14 @@ const char *command_strings_lib[] = {
++     "run_turbine",
++ };
++ 
++-static void process_command(char *line, void (*f[COMMAND_COUNT])(char *))
+++static void process_command(
+++    char *line, void (*f[COMMAND_COUNT])(pipeto_ctx_t *ctx), pipeto_ctx_t *ctx)
++ {
++     bool command_found = false;
++ 
++     for (int i = 0; i < COMMAND_COUNT; i++) {
++         if (strcmp(line, command_strings[i]) == 0) {
++-            f[i](line);
+++            f[i](ctx);
++             command_found = true;
++             break;
++         }
++@@ -90,14 +89,13 @@ static void process_command(char *line, void (*f[COMMAND_COUNT])(char *))
++             break;
++         }
++     }
++-
++     if (strncmp(line, "!", 1) == 0) {
++         int index = atoi(line + 1);
++         if (index > 0 && index <= history_count_get()) {
++             const char *cmd = history_get(index - 1);
++             if (cmd) {
++                 printf("%s\n", cmd);
++-                process_command((char *)cmd, f);
+++                process_command((char *)cmd, f, ctx);
++                 command_found = true;
++             }
++         } else {
++@@ -105,20 +103,18 @@ static void process_command(char *line, void (*f[COMMAND_COUNT])(char *))
++             command_found = true;
++         }
++     }
++-    
++     if (!command_found && strlen(line) > 0) {
++         printf("Unknown command: %s\n", line);
++     }
++ }
++ 
++-void show_history(void)
+++void show_history(pipeto_ctx_t *ctx)
++ {
++     history_show();
++ }
++ 
++ void check_pepito_lib(char *input)
++ {
++-    typedef void(*t_myfunc)(void);
++     void *dlh = dlopen("libpepito.so", RTLD_LAZY);
++     void (*fnc)(void);
++ 
++@@ -139,12 +135,12 @@ int my_console(void)
++     char *line = NULL;
++     size_t len = 0;
++     ssize_t read;
++-    void (*f[COMMAND_COUNT])(void);
+++    void (*f[COMMAND_COUNT])(pipeto_ctx_t *ctx);
+++    pipeto_ctx_t ctx = {false};
++ 
++     initialize_commands(f);
++     history_init();
++     load_pipetorc();
++-
++     while (1) {
++         write_color(1, BHRED, "pipeto");
++         write(1, "> ", 3);
++@@ -153,14 +149,11 @@ int my_console(void)
++             break;
++         if (line[0] == '\n')
++             continue;
++-
++         line[strcspn(line, "\n")] = '\0';
++         if (strlen(line) > 0)
++             history_add(line);
++-            
++-        process_command(line, (void (**)(char *))f);
+++        process_command(line, (void (**)(pipeto_ctx_t *))f, &ctx);
++     }
++-
++     history_free();
++     free(line);
++     return 0;
++diff --git a/Pipeto/src/my_console.o b/Pipeto/src/my_console.o
++index 1920dfb..b5c8abf 100644
++Binary files a/Pipeto/src/my_console.o and b/Pipeto/src/my_console.o differ
++diff --git a/Pipeto/src/utils.c b/Pipeto/src/utils.c
++index b2ff890..17fbf03 100644
++--- a/Pipeto/src/utils.c
+++++ b/Pipeto/src/utils.c
++@@ -1,9 +1,17 @@
++-#include "ansi-colors.h"
++-#include <string.h>
++-#include <unistd.h>
+++/*
+++** EPITECH PROJECT, 2025
+++** __
+++** File description:
+++** _
+++*/
+++
++ #include <stdio.h>
++ #include <stdlib.h>
+++#include <string.h>
++ #include <sys/types.h>
+++#include <unistd.h>
+++
+++#include "ansicolors.h"
++ 
++ void write_color(int fd, const char *color, const char *str)
++ {
++@@ -12,7 +20,7 @@ void write_color(int fd, const char *color, const char *str)
++     dprintf(fd, "%s%s%s", color, str, CRESET);
++ }
++ 
++-void load_pipetorc()
+++void load_pipetorc(void)
++ {
++     FILE *rc_file;
++     char *home;
++@@ -28,17 +36,14 @@ void load_pipetorc()
++             rc_file = fopen(home_rc, "r");
++         }
++     }
++-
++     if (!rc_file) {
++         return;
++     }
++-
++     while (fgets(line, sizeof(line), rc_file)) {
++         if (line[0] == '#' || line[0] == '\n') {
++             continue;
++         }
++         line[strcspn(line, "\n")] = '\0';
++-
++         if (strncmp(line, "exec ", 5) == 0) {
++             snprintf(cmd, sizeof(cmd), "%s", line + 5);
++             system(cmd);
++diff --git a/Pipeto/src/utils.o b/Pipeto/src/utils.o
++index 5e59c90..2fdcfa6 100644
++Binary files a/Pipeto/src/utils.o and b/Pipeto/src/utils.o differ
+diff --git a/activate_emergency_protocols.patch b/activate_emergency_protocols.patch
+new file mode 100644
+index 0000000..b0c78f9
+--- /dev/null
++++ b/activate_emergency_protocols.patch
+@@ -0,0 +1,196 @@
++commit 5142a3fe796342186f3a3838e246982edb0197d9
++Author: savalet <savinien.petitjean@gmail.com>
++Date:   Sun May 25 17:40:01 2025 +0200
++
++    Now using hashed password instead of hardcoded value for activate_emergency_protocols
++    
++    Change hash comment
++
++diff --git a/Pipeto/Makefile b/Pipeto/Makefile
++index e6351eb..705522a 100644
++--- a/Pipeto/Makefile
+++++ b/Pipeto/Makefile
++@@ -44,7 +44,8 @@ CC ?= AFL_USE_ASAN=1 afl-gcc-fast
++ 
++ LDLIBS =  -ldl
++ 
++-CFLAGS += -Wall -Wextra -fPIC -fno-stack-protector -Wno-implicit-function-declaration -fno-pie
+++CFLAGS += -Wall -Wextra -fPIC -fno-stack-protector
+++CFLAGS += -Wno-implicit-function-declaration -fno-pie
++ 
++ CPPFLAGS += -iquote ./include
++ 
++@@ -55,7 +56,7 @@ $(B_OBJ): CFLAGS +=
++ $(G_OBJ): CFLAGS += -g3 -ggdb
++ 
++ $(NAME): $(OBJ)
++-	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS) -s -no-pie
+++	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS) -lcrypto -lssl -s -no-pie
++ 
++ clean:
++ 	$(RM) $(OBJ)
++diff --git a/Pipeto/src/commands/activate_emergency_protocols.c b/Pipeto/src/commands/activate_emergency_protocols.c
++index 6191ee5..6619936 100644
++--- a/Pipeto/src/commands/activate_emergency_protocols.c
+++++ b/Pipeto/src/commands/activate_emergency_protocols.c
++@@ -5,25 +5,34 @@
++ ** activate_emergency_protocols
++ */
++ 
++-#include <stdbool.h>
+++#include <openssl/sha.h>
++ #include <stdio.h>
++ #include <string.h>
++ 
++-#include "pipeto.h"
+++#include "pipeto.h" // pour pipeto_ctx_t
+++
+++// SHA-256 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9
+++const unsigned char ADMIN_HASH[32] = {
+++    0x24, 0x0b, 0xe5, 0x18, 0xfa, 0xbd, 0x27, 0x24,
+++    0xdd, 0xb6, 0xf0, 0x4e, 0xeb, 0x1d, 0xa5, 0x96,
+++    0x74, 0x48, 0xd7, 0xe8, 0x31, 0xc0, 0x8c, 0x8f,
+++    0xa8, 0x22, 0x80, 0x9f, 0x74, 0xc7, 0x20, 0xa9
+++};
++ 
++ void activate_emergency_protocols(pipeto_ctx_t *ctx)
++ {
++-    char input[100];
+++    char input[128];
+++    unsigned char hash[SHA256_DIGEST_LENGTH];
++ 
++     printf("Enter emergency password: ");
++-    fgets(input, sizeof(input), stdin);
++-    input[strcspn(input, "\n")] = 0;
++-    if (strlen(input) == 0) {
++-        printf("No password entered, emergency protocols not activated.\n");
+++    if (!fgets(input, sizeof(input), stdin))
++         return;
++-    }
++-    if (strcmp(input, "admin123") == 0) {
++-        printf("{Emergency protocols activated, you are now admin !}\n");
+++    input[strcspn(input, "\n")] = 0;
+++    SHA256((unsigned char *)input, strlen(input), hash);
+++    if (memcmp(hash, ADMIN_HASH, SHA256_DIGEST_LENGTH) == 0) {
++         ctx->is_admin = true;
+++        puts("{Emergency protocols activated, you are now admin !}");
+++    } else {
+++        puts("Incorrect password.");
++     }
++ }
++diff --git a/Pipeto/src/commands/activate_emergency_protocols.o b/Pipeto/src/commands/activate_emergency_protocols.o
++index 8e3b936..bbf660b 100644
++Binary files a/Pipeto/src/commands/activate_emergency_protocols.o and b/Pipeto/src/commands/activate_emergency_protocols.o differ
++diff --git a/Pipeto/src/commands/log_system_events.o b/Pipeto/src/commands/log_system_events.o
++index b2df86b..9dd5d57 100644
++Binary files a/Pipeto/src/commands/log_system_events.o and b/Pipeto/src/commands/log_system_events.o differ
++diff --git a/Pipeto/src/commands/run_diagnostic.c b/Pipeto/src/commands/run_diagnostic.c
++index da9da7e..68764c9 100644
++--- a/Pipeto/src/commands/run_diagnostic.c
+++++ b/Pipeto/src/commands/run_diagnostic.c
++@@ -20,17 +20,14 @@ void run_diagnostic(pipeto_ctx_t *ctx)
++     printf("Enter diagnostic mode (normal/debug/advanced): ");
++     fgets(input, sizeof(input), stdin);
++     input[strcspn(input, "\n")] = '\0';
++-
++     if (strcmp(input, "debug") == 0) {
++         data = (int *)sensitive_info;
++     } else if (strcmp(input, "advanced") == 0) {
++         diagnostic_code = rand() % 1000;
++         data = &diagnostic_code;
++     }
++-
++     printf("Running diagnostic...\n");
++     sleep(1);
++-
++     if (data == NULL) {
++         printf("Error: Diagnostic data is unavailable (NULL pointer).\n");
++     } else if (data == (int *)sensitive_info) {
++@@ -38,10 +35,8 @@ void run_diagnostic(pipeto_ctx_t *ctx)
++     } else {
++         printf("Diagnostic result: Code %d\n", *data);
++     }
++-
++     printf("Performing system health check...\n");
++     sleep(1);
++     printf("System health: OK\n");
++-
++     printf("Diagnostic complete.\n");
++ }
++diff --git a/Pipeto/src/commands/send_status_report.c b/Pipeto/src/commands/send_status_report.c
++index 7d66351..b9eb390 100644
++--- a/Pipeto/src/commands/send_status_report.c
+++++ b/Pipeto/src/commands/send_status_report.c
++@@ -28,31 +28,25 @@ void base64_encode(const char *input, char *output)
++             char_array_4[2] = ((char_array_3[1] & 0x0f) << 2)
++                 + ((char_array_3[2] & 0xc0) >> 6);
++             char_array_4[3] = char_array_3[2] & 0x3f;
++-
++             for (i = 0; i < 4; i++)
++                 output[j++] = base64_chars[char_array_4[i]];
++             i = 0;
++         }
++     }
++-
++     if (i) {
++         for (int k = i; k < 3; k++)
++             char_array_3[k] = '\0';
++-
++         char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
++         char_array_4[1] = ((char_array_3[0] & 0x03) << 4)
++             + ((char_array_3[1] & 0xf0) >> 4);
++         char_array_4[2] = ((char_array_3[1] & 0x0f) << 2)
++             + ((char_array_3[2] & 0xc0) >> 6);
++         char_array_4[3] = char_array_3[2] & 0x3f;
++-
++         for (int k = 0; k < i + 1; k++)
++             output[j++] = base64_chars[char_array_4[k]];
++-
++         while (i++ < 3)
++             output[j++] = '=';
++     }
++-
++     output[j] = '\0';
++ }
++ 
++diff --git a/Pipeto/src/commands/set_reactor_power.c b/Pipeto/src/commands/set_reactor_power.c
++index 9fd6194..b8dd2de 100644
++--- a/Pipeto/src/commands/set_reactor_power.c
+++++ b/Pipeto/src/commands/set_reactor_power.c
++@@ -18,10 +18,8 @@ void set_reactor_power(pipeto_ctx_t *ctx)
++     printf("Enter reactor power level: ");
++     fgets(power, sizeof(power), stdin);
++     power[strcspn(power, "\n")] = 0;
++-
++     int input_power = atoi(power);
++     int new_power;
++-
++     if (input_power > INT_MAX - 1000) {
++         printf("\nReactor power adjustment may be incorrect.\n");
++         printf("Reactor systems are behaving erratically!\n");
++@@ -30,9 +28,7 @@ void set_reactor_power(pipeto_ctx_t *ctx)
++         printf("Emergency shutdown initiated!\n\n");
++         exit(1);
++     }
++-
++     new_power = input_power + 1000;
++-
++     if (new_power < 0) {
++         printf("Reactor power set to an invalid value: %d\n", new_power);
++         printf("Reactor core meltdown imminent!\n");
++diff --git a/Pipeto/src/my_console.o b/Pipeto/src/my_console.o
++index b5c8abf..e65becf 100644
++Binary files a/Pipeto/src/my_console.o and b/Pipeto/src/my_console.o differ
++diff --git a/flake.nix b/flake.nix
++index 28e33bb..9fa8aff 100644
++--- a/flake.nix
+++++ b/flake.nix
++@@ -17,6 +17,8 @@
++               criterion
++               valgrind
++               compiledb
+++              openssl
+++              libxcrypt
++             ];
++           };
++       });
+diff --git a/check_cooling_pressure.patch b/check_cooling_pressure.patch
+new file mode 100644
+index 0000000..b0941b7
+--- /dev/null
++++ b/check_cooling_pressure.patch
+@@ -0,0 +1,27 @@
++commit e32fb90bc71e72878727732293c415196020232b
++Author: savalet <savinien.petitjean@gmail.com>
++Date:   Tue May 20 14:04:51 2025 +0200
++
++    Fix check cooling pressure
++
++diff --git a/Pipeto/src/commands/check_cooling_pressure.c b/Pipeto/src/commands/check_cooling_pressure.c
++index caf99fb..902da00 100644
++--- a/Pipeto/src/commands/check_cooling_pressure.c
+++++ b/Pipeto/src/commands/check_cooling_pressure.c
++@@ -38,14 +38,13 @@ void check_cooling_pressure()
++     printf("Checking cooling pressure...\n");
++     sleep(1);
++     log_pressure_status(data);
++-    free(data);
++     sleep(3);
++-    if (strcmp(data, "Pressure OK")) {
+++    if (strcmp(data, "Pressure OK") != 0)
++         printf("Sensitive Info: %s\n", sensitive_info);
++-    }
++     char temp_buffer[32];
++     snprintf(temp_buffer, sizeof(temp_buffer), "Temporary data: %d", rand() % 100);
++     printf("Temporary buffer: %s\n", temp_buffer);
++     simulate_sensor_reading();
++     printf("Cooling pressure check complete.\n");
+++    free(data);
++ }
+diff --git a/check_reactor_status.patch b/check_reactor_status.patch
+new file mode 100644
+index 0000000..d2cefb9
+--- /dev/null
++++ b/check_reactor_status.patch
+@@ -0,0 +1,81 @@
++commit ba0f6b7a41cd1b42c540cc2d511ddf87f72786dc
++Author: savalet <savinien.petitjean@gmail.com>
++Date:   Sun May 25 17:49:05 2025 +0200
++
++    Use a good encryption function from openssl in check_reactor_status
++
++diff --git a/Pipeto/src/commands/check_reactor_status.c b/Pipeto/src/commands/check_reactor_status.c
++index 5be1451..4cc4e0b 100644
++--- a/Pipeto/src/commands/check_reactor_status.c
+++++ b/Pipeto/src/commands/check_reactor_status.c
++@@ -1,31 +1,40 @@
++ /*
++-** EPITECH PROJECT, 2024
++-** Pipeto
+++** EPITECH PROJECT, 2025
+++** __
++ ** File description:
++-** check_reactor_status
+++** _
++ */
++ 
++ #include "pipeto.h"
+++#include <openssl/evp.h>
++ #include <stdio.h>
+++#include <string.h>
++ #include <unistd.h>
++ 
++-void encrypt_message(const char *input, char *output, int shift)
+++void encrypt_message_openssl(const char *plaintext,
+++    unsigned char *ciphertext, int *len)
++ {
++-    for (int i = 0; input[i] != '\0'; i++) {
++-        if (input[i] >= 'A' && input[i] <= 'Z') {
++-            output[i] = ((input[i] - 'A' + shift) % 26) + 'A';
++-        } else if (input[i] >= 'a' && input[i] <= 'z') {
++-            output[i] = ((input[i] - 'a' + shift) % 26) + 'a';
++-        } else {
++-            output[i] = input[i];
++-        }
++-    }
+++    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+++    const unsigned char key[32] = "my_very_secret_encryption_key_!";
+++    const unsigned char iv[17] = "initial_vector_iv";
+++    int len_out;
+++    int ciphertext_len;
+++
+++    EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv);
+++    EVP_EncryptUpdate(ctx, ciphertext, &len_out,
+++        (const unsigned char *)plaintext, strlen(plaintext));
+++    ciphertext_len = len_out;
+++    EVP_EncryptFinal_ex(ctx, ciphertext + len_out, &len_out);
+++    ciphertext_len += len_out;
+++    *len = ciphertext_len;
+++    EVP_CIPHER_CTX_free(ctx);
++ }
++ 
++ void check_reactor_status(pipeto_ctx_t *ctx)
++ {
++     const char *message = "ReactorStatusOK";
++-    char encrypted_message[50] = {0};
+++    unsigned char encrypted[128] = {0};
+++    int encrypted_len;
++ 
++     printf("Starting reactor status check...\n");
++     sleep(1);
++@@ -41,10 +50,12 @@ void check_reactor_status(pipeto_ctx_t *ctx)
++     sleep(2);
++     printf("Radiation levels: Safe\n\n");
++     printf("Encrypting critical reactor data...\n");
++-    encrypt_message(message, encrypted_message, 3);
+++    encrypt_message_openssl(message, encrypted, &encrypted_len);
++     sleep(1);
++-    printf("Encrypted message: %s\n\n", encrypted_message);
+++    printf("Encrypted message: ");
+++    for (int i = 0; i < encrypted_len; i++)
+++        printf("%02x", encrypted[i]);
+++    printf("\n\n");
++     printf("Reactor status: OK\n");
++     printf("Reactor status check complete.\n\n");
++ }
++-
+diff --git a/log_system_event.patch b/log_system_event.patch
+new file mode 100644
+index 0000000..2a4ad99
+--- /dev/null
++++ b/log_system_event.patch
+@@ -0,0 +1,43 @@
++commit 4c53a93bd6a1640afef0ac8eb5a7fe33c3804368
++Author: savalet <savinien.petitjean@gmail.com>
++Date:   Sat May 24 18:53:34 2025 +0200
++
++    Fix log system event
++
++diff --git a/Pipeto/src/commands/log_system_events.c b/Pipeto/src/commands/log_system_events.c
++index cdde77b..b7ccfae 100644
++--- a/Pipeto/src/commands/log_system_events.c
+++++ b/Pipeto/src/commands/log_system_events.c
++@@ -5,16 +5,19 @@
++ ** log_system_events
++ */
++ 
++-#include "pipeto.h"
+++#include <fcntl.h>
++ #include <stdio.h>
++ #include <string.h>
++ 
++-void log_system_event(pipeto_ctx_t *ctx)
+++#include "pipeto.h"
+++
+++void log_system_event(pipeto_ctx_t *ctx[[gnu::unused]])
++ {
++     char command[100];
++     char input[100];
++     char secret_key[32] = "{SECRET_LOG_12PIERRE34}";
++     FILE *log;
+++    int fd;
++ 
++     printf("Enter command: ");
++     fgets(input, sizeof(input), stdin);
++@@ -24,6 +27,10 @@ void log_system_event(pipeto_ctx_t *ctx)
++         printf("Error: Unable to open log file 'Data/system.log'.\n");
++         return;
++     }
+++    fd = fileno(log);
+++    if (fd < 0)
+++        return;
+++    flock(fd, LOCK_EX);
++     printf("Logging event: %s\n", input);
++     fprintf(log, "EVENT: %s\n", input);
++     if (strstr(input, "leak"))
+diff --git a/monitor_radiation_levels.patch b/monitor_radiation_levels.patch
+new file mode 100644
+index 0000000..7375d7a
+--- /dev/null
++++ b/monitor_radiation_levels.patch
+@@ -0,0 +1,96 @@
++commit 684f926a3adfa5d8bb3e0ae74eaf91accb425a5b
++Author: savalet <savinien.petitjean@gmail.com>
++Date:   Tue May 20 14:10:47 2025 +0200
++
++    Fix monitor radiation levels
++
++diff --git a/Pipeto/src/commands/load_config.c b/Pipeto/src/commands/load_config.c
++index 7505b38..7840574 100644
++--- a/Pipeto/src/commands/load_config.c
+++++ b/Pipeto/src/commands/load_config.c
++@@ -38,5 +38,4 @@ void load_config()
++         printf("failure!\n");
++     }
++     close(fd);
++-    return;
++ }
++diff --git a/Pipeto/src/commands/load_fuel_rods.c b/Pipeto/src/commands/load_fuel_rods.c
++index 2f27156..55352e2 100644
++--- a/Pipeto/src/commands/load_fuel_rods.c
+++++ b/Pipeto/src/commands/load_fuel_rods.c
++@@ -23,7 +23,7 @@ void load_fuel_rods()
++         printf("Error: Too many fuel rods!\n");
++         return;
++     }
++-    else if (i < 10 && i > 0) {
+++    if (i < 10 && i > 0) {
++         for (int j = 0; j < i; j++) {
++             fuel_rods[j] = j + 1;
++             printf("Fuel rod %d loaded.\n", fuel_rods[j]);
++@@ -31,7 +31,7 @@ void load_fuel_rods()
++         }
++         return;
++     }
++-    if (strcmp(secret_key, "{The secret stone is here !}")) {
+++    if (strcmp(secret_key, "{The secret stone is here !}") != 0) {
++         printf("\nSensitive Data:\n");
++         printf("Secret Key: %s\n", secret_key);
++     }
++diff --git a/Pipeto/src/commands/log_system_events.c b/Pipeto/src/commands/log_system_events.c
++index 02e11b3..630effb 100644
++--- a/Pipeto/src/commands/log_system_events.c
+++++ b/Pipeto/src/commands/log_system_events.c
++@@ -27,8 +27,7 @@ void log_system_event()
++     printf("Logging event: %s\n", input);
++     fprintf(log, "EVENT: %s\n", input);
++ 
++-    if (strstr(input, "leak")) {
+++    if (strstr(input, "leak"))
++         fprintf(log, "SECRET_KEY_LEAKED: %s\n", secret_key);
++-    }
++     fclose(log);
++-}
++\ No newline at end of file
+++}
++diff --git a/Pipeto/src/commands/monitor_radiation_levels.c b/Pipeto/src/commands/monitor_radiation_levels.c
++index f7fa47d..2cc24ae 100644
++--- a/Pipeto/src/commands/monitor_radiation_levels.c
+++++ b/Pipeto/src/commands/monitor_radiation_levels.c
++@@ -8,23 +8,18 @@
++ #include <stdio.h>
++ #include <string.h>
++ void secret_function ()
++-	{
++-		printf (
++-				"{The stone isn't in the pocket anymore ...}\n");
++-	}
+++{
+++    printf ("{The stone isn't in the pocket anymore ...}\n");
+++}
++ void monitor_radiation_levels ()
++-	{
++-		char    buffer[10];
++-		void (* function_ptr) () = NULL;
++-		printf ("Enter radiation levels: ");
++-		gets (buffer);
++-		printf ("Radiation Levels: %s\n" ,buffer);
++-		if (function_ptr)
++-			{
++-				function_ptr();
++-			} else
++-			{
++-				printf ("Function Pointer: %p\n"
++-						,( void * ) function_ptr);
++-			}
++-	}
+++{
+++    char buffer[10];
+++    void(*function_ptr)() = NULL;
+++    printf("Enter radiation levels: ");
+++    fgets(buffer, sizeof buffer, stdin);
+++    printf ("Radiation Levels: %s\n" ,buffer);
+++    if (function_ptr)
+++        function_ptr();
+++    else
+++        printf ("Function Pointer: %p\n",( void * ) function_ptr);
+++}
+diff --git a/run_turbine.patch b/run_turbine.patch
+new file mode 100644
+index 0000000..9d9db19
+--- /dev/null
++++ b/run_turbine.patch
+@@ -0,0 +1,37 @@
++commit a16a9aa6e62106684ec1a86919fb41abb746443b
++Author: savalet <savinien.petitjean@gmail.com>
++Date:   Sun May 25 18:03:41 2025 +0200
++
++    Fix run_turbine
++
++diff --git a/lib/src/run_turbine.c b/lib/src/run_turbine.c
++index d0bb0d1..ad22471 100644
++--- a/lib/src/run_turbine.c
+++++ b/lib/src/run_turbine.c
++@@ -6,6 +6,8 @@
++ */
++ 
++ #include "pepito.h"
+++#include "unistd.h"
+++#include <stdlib.h>
++ 
++ void run_turbine() {
++     char input[128];
++@@ -17,7 +19,7 @@ void run_turbine() {
++ 
++     int rotations = atoi(input);
++ 
++-    if (rotations != 0 && rotations > 15) {
+++    if (rotations > 15) {
++         printf("Invalid number of rotations.\n");
++         return;
++     }
++@@ -27,7 +29,7 @@ void run_turbine() {
++             printf("{ERR0R TURB1NE CAN'T ST0P}\n");
++         }
++         printf("Turbine is running... %d/%d\n", i + 1, rotations);
++-        sleep(rand() % 3 + 1);
+++        sleep((rand() % 3) + 1);
++         i++;
++     }
++     printf("Turbine has stopped.\n");
+diff --git a/send_status_report.patch b/send_status_report.patch
+new file mode 100644
+index 0000000..becdb7c
+--- /dev/null
++++ b/send_status_report.patch
+@@ -0,0 +1,79 @@
++commit 4a6a746b0e763154e89877e7ad403938167221fb
++Author: savalet <savinien.petitjean@gmail.com>
++Date:   Sun May 25 18:34:36 2025 +0200
++
++    Fix send_status_report
++
++diff --git a/Pipeto/src/commands/check_reactor_status.o b/Pipeto/src/commands/check_reactor_status.o
++index c23cf0c..b0cb95a 100644
++Binary files a/Pipeto/src/commands/check_reactor_status.o and b/Pipeto/src/commands/check_reactor_status.o differ
++diff --git a/Pipeto/src/commands/send_status_report.c b/Pipeto/src/commands/send_status_report.c
++index b9eb390..bd160bc 100644
++--- a/Pipeto/src/commands/send_status_report.c
+++++ b/Pipeto/src/commands/send_status_report.c
++@@ -5,55 +5,15 @@
++ ** send_status_report
++ */
++ 
+++#include "openssl/sha.h"
++ #include "pipeto.h"
++ #include <stdbool.h>
++ #include <stdio.h>
++ 
++-void base64_encode(const char *input, char *output)
++-{
++-    const char *base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
++-    int i = 0;
++-    int j = 0;
++-    unsigned char char_array_3[3];
++-    unsigned char char_array_4[4];
++-
++-    while (*input) {
++-        char_array_3[i] = *(input);
++-        input++;
++-        i++;
++-        if (i == 3) {
++-            char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
++-            char_array_4[1] = ((char_array_3[0] & 0x03) << 4)
++-                + ((char_array_3[1] & 0xf0) >> 4);
++-            char_array_4[2] = ((char_array_3[1] & 0x0f) << 2)
++-                + ((char_array_3[2] & 0xc0) >> 6);
++-            char_array_4[3] = char_array_3[2] & 0x3f;
++-            for (i = 0; i < 4; i++)
++-                output[j++] = base64_chars[char_array_4[i]];
++-            i = 0;
++-        }
++-    }
++-    if (i) {
++-        for (int k = i; k < 3; k++)
++-            char_array_3[k] = '\0';
++-        char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
++-        char_array_4[1] = ((char_array_3[0] & 0x03) << 4)
++-            + ((char_array_3[1] & 0xf0) >> 4);
++-        char_array_4[2] = ((char_array_3[1] & 0x0f) << 2)
++-            + ((char_array_3[2] & 0xc0) >> 6);
++-        char_array_4[3] = char_array_3[2] & 0x3f;
++-        for (int k = 0; k < i + 1; k++)
++-            output[j++] = base64_chars[char_array_4[k]];
++-        while (i++ < 3)
++-            output[j++] = '=';
++-    }
++-    output[j] = '\0';
++-}
++-
++ void send_status_report(pipeto_ctx_t *ctx)
++ {
++     FILE *file = fopen("Data/status_report.txt", "w");
++-    char encoded_report[512];
+++    char encoded_report[SHA256_DIGEST_LENGTH];
++     char report[256];
++     const char *hostname = "localhost";
++     const char *ip_address = "127.0.0.1";
++@@ -67,6 +27,7 @@ void send_status_report(pipeto_ctx_t *ctx)
++     snprintf(report, sizeof(report), "Hostname: %s\nIP Address: %s\n%s\n",
++         hostname, ip_address, process_info);
++     base64_encode(report, encoded_report);
+++    SHA256((unsigned char *)report, strlen(report), encoded_report);
++     fprintf(file, "Encoded Status Report:\n%s\n", encoded_report);
++     fclose(file);
++     printf("Status report sent and saved to 'Data/status_report.txt'.\n");
+diff --git a/turbine_temperature.patch b/turbine_temperature.patch
+new file mode 100644
+index 0000000..9f96cec
+--- /dev/null
++++ b/turbine_temperature.patch
+@@ -0,0 +1,43 @@
++commit 63d0857b93f639f20ac5250d9569433861df1bf4
++Author: savalet <savinien.petitjean@gmail.com>
++Date:   Sun May 25 18:10:56 2025 +0200
++
++    Fix turbine_temperature
++
++diff --git a/lib/src/turbine_temperature.c b/lib/src/turbine_temperature.c
++index f85ad9c..40d10d5 100644
++--- a/lib/src/turbine_temperature.c
+++++ b/lib/src/turbine_temperature.c
++@@ -9,27 +9,24 @@
++ 
++ void turbine_temperature() {
++     char input[128];
+++    long long degress;
++     
++     printf("Enter the number of degrees you want to increase or decrease the turbine temperature : ");
++     fgets(input, sizeof(input), stdin);
++     input[strcspn(input, "\n")] = '\0';
++-
++-    int degrees = strtoll(input, NULL, 10);
++-
+++    degrees = strtoll(input, NULL, 10);
++     if (degrees == INT_MAX - 1 || degrees == INT_MIN + 1) {
++         printf("Turbine temperature is too unstable.\n");
++         printf("{ERR0R TURBINE WILL EXPLODE}\n");
++         exit(1);
++     }
++-
++     printf("Turbine temperature is %d degrees.\n", 20);
++-
++     if (degrees < 0) {
++-        printf("Turbine temperature is decreasing : %d\n", (20 + degrees));
+++        printf("Turbine temperature is decreasing : %lld\n", (20 + degrees));
++         return;
++     }
++-    else if (degrees > 0) {
++-        printf("Turbine temperature is increasing : %d\n", (20 + degrees));
+++    if (degrees > 0) {
+++        printf("Turbine temperature is increasing : %lld\n", (20 + degrees));
++         return;
++     }
++ }
+-- 
+2.48.1
+
