@@ -6,6 +6,8 @@
 */
 
 #include "pepito.h"
+#include "unistd.h"
+#include <stdlib.h>
 
 void run_turbine() {
     char input[128];
@@ -17,7 +19,7 @@ void run_turbine() {
 
     int rotations = atoi(input);
 
-    if (rotations != 0 && rotations > 15) {
+    if (rotations > 15) {
         printf("Invalid number of rotations.\n");
         return;
     }
@@ -27,7 +29,7 @@ void run_turbine() {
             printf("{ERR0R TURB1NE CAN'T ST0P}\n");
         }
         printf("Turbine is running... %d/%d\n", i + 1, rotations);
-        sleep(rand() % 3 + 1);
+        sleep((rand() % 3) + 1);
         i++;
     }
     printf("Turbine has stopped.\n");
